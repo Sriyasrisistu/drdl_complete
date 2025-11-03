@@ -2,7 +2,7 @@
 
 A comprehensive full-stack web application for managing safety fire requests at DRDL (Defence Research and Development Laboratory).
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - Java 17+
@@ -31,7 +31,7 @@ Frontend runs on: `http://localhost:3000`
 
 ---
 
-## 📋 Features
+##  Features
 
 ### Safety Coverage Types
 - **INTEGRATION** - Integration facility tests
@@ -46,19 +46,19 @@ Frontend runs on: `http://localhost:3000`
 - **ANY OTHER** - Custom safety coverage
 
 ### Key Functionalities
-✅ Create and manage safety requests
-✅ TARB clearance tracking
-✅ Activity scheduling and monitoring
-✅ Ambulance requirement management
-✅ Test controller assignment
-✅ Approval workflow (Head SFEED → GD-TS)
-✅ Transportation management
-✅ Driver authorization tracking
-✅ Request history and reporting
+ Create and manage safety requests
+ TARB clearance tracking
+ Activity scheduling and monitoring
+ Ambulance requirement management
+ Test controller assignment
+ Approval workflow (Head SFEED → GD-TS)
+ Transportation management
+ Driver authorization tracking
+ Request history and reporting
 
 ---
 
-## 🏗 Architecture
+##  Architecture
 
 ### Tech Stack
 
@@ -81,7 +81,7 @@ Frontend runs on: `http://localhost:3000`
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 drdl-fire-management/
@@ -129,7 +129,7 @@ drdl-fire-management/
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 All endpoints are prefixed with `/api/v1`
 
@@ -144,7 +144,7 @@ All endpoints are prefixed with `/api/v1`
 
 ---
 
-## 📊 Database Schema
+##  Database Schema
 
 The `SAFETY_REQUEST` table contains 33 columns capturing:
 - Personnel and organizational details
@@ -160,7 +160,7 @@ See `documentation/SETUP_GUIDE.md` for full schema.
 
 ---
 
-## 🔐 CORS Configuration
+##  CORS Configuration
 
 **Allowed Origins:** `http://localhost:3000`
 **Methods:** GET, POST, PUT, DELETE, OPTIONS
@@ -168,7 +168,7 @@ See `documentation/SETUP_GUIDE.md` for full schema.
 
 ---
 
-## 📖 Documentation
+##  Documentation
 
 - **Setup Guide:** `documentation/SETUP_GUIDE.md`
 - **API Documentation:** `documentation/API_DOCUMENTATION.md`
@@ -176,7 +176,7 @@ See `documentation/SETUP_GUIDE.md` for full schema.
 
 ---
 
-## 🚦 Development Workflow
+##  Development Workflow
 
 1. **Backend Development**
    - Create Spring Boot application
@@ -200,7 +200,7 @@ See `documentation/SETUP_GUIDE.md` for full schema.
 
 ---
 
-## 🛠 Configuration
+##  Configuration
 
 ### Backend (application.properties)
 ```properties
@@ -218,7 +218,7 @@ const API_BASE_URL = 'http://localhost:8080/api/v1/safety-requests';
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 ### Backend
 ```bash
@@ -234,7 +234,7 @@ npm test
 
 ---
 
-## 📦 Building for Production
+##  Building for Production
 
 ### Backend
 ```bash
@@ -252,7 +252,7 @@ npm run build
 
 ---
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Database Connection Error
 - Verify Oracle is running
@@ -276,7 +276,7 @@ mvn install
 
 ---
 
-## 📝 Code Standards
+##  Code Standards
 
 ### Backend (Java)
 - Follow Spring Framework conventions
@@ -292,7 +292,7 @@ mvn install
 
 ---
 
-## 🔄 Continuous Integration
+##  Continuous Integration
 
 Recommended CI/CD tools:
 - **GitHub Actions** for automated tests
@@ -301,23 +301,14 @@ Recommended CI/CD tools:
 
 ---
 
-## 📞 Support
 
-For issues or questions:
-1. Check `documentation/SETUP_GUIDE.md`
-2. Review `documentation/API_DOCUMENTATION.md`
-3. Check browser console (F12) for frontend errors
-4. Check backend logs for server errors
-
----
-
-## 📄 License
+##  License
 
 Internal DRDL Project - Confidential
 
 ---
 
-## 👥 Team
+##  Team
 
 **Developed by:** DRDL Development Team
 **Last Updated:** November 2024
@@ -325,7 +316,7 @@ Internal DRDL Project - Confidential
 
 ---
 
-## 🎯 Future Enhancements
+##  Future Enhancements
 
 - [ ] User authentication & authorization
 - [ ] Email notifications
@@ -338,12 +329,8 @@ Internal DRDL Project - Confidential
 
 ---
 
-## 📞 Contact
+##  Contact
 
-**Email:** drdl.admin@example.com
-**Phone:** +91-XXX-XXXX-XXXX
-**Address:** DRDL, Hyderabad, India
+**Email:** sistusriyasri@gmail.com
 
 ---
-
-**© 2024 Defence Research and Development Laboratory. All rights reserved.**
