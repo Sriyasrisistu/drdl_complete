@@ -1,9 +1,17 @@
 import React, { useState } from "react";
 import ApiService from "../services/apiService";
 import "../styles/SafetyFireRequestForm.css";
+
 import IntegrationSection from "./IntegrationSection";
 import StaticTestSection from "./StaticTestSection";
+import ThermostructuralSection from "./ThermostructuralSection";
+import PressureTestSection from "./PressureTestSection";
+import GRTSection from "./GRTSection";
+import AlignmentInspectionSection from "./AlignmentInspectionSection";
+import RadiographySection from "./RadiographySection";
+import HydrobasinSection from "./HydrobasinSection";
 import TransportationSection from "./TransportationSection";
+import OtherSection from "./OtherSection";
 
 export default function SafetyFireRequestForm() {
   const [coverageType, setCoverageType] = useState("");
@@ -15,10 +23,12 @@ export default function SafetyFireRequestForm() {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [declared, setDeclared] = useState(false);
 
   const handleCoverageChange = (e) => {
-    setCoverageType(e.target.value);
-    setFormData({ ...formData, safetyCoverage: e.target.value });
+    const value = e.target.value;
+    setCoverageType(value);
+    setFormData({ ...formData, safetyCoverage: value });
   };
 
   const handleInputChange = (e) => {
@@ -28,6 +38,17 @@ export default function SafetyFireRequestForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!declared) {
+      setMessage("✗ Error: You must accept the safety declaration");
+      return;
+    }
+
+    if (!formData.personnelNumber || !formData.safetyCoverage) {
+      setMessage("✗ Error: Personnel Number and Safety Coverage are required");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
 
@@ -35,6 +56,8 @@ export default function SafetyFireRequestForm() {
       const response = await ApiService.createRequest(formData);
       setMessage("✓ Request submitted successfully! ID: " + response.requestId);
       console.log("Response:", response);
+
+      // Reset form
       setFormData({
         personnelNumber: "",
         safetyCoverage: "",
@@ -42,8 +65,9 @@ export default function SafetyFireRequestForm() {
         division: "Engineering",
       });
       setCoverageType("");
+      setDeclared(false);
     } catch (error) {
-      setMessage(`✗ Error: ${error.message}`);
+      setMessage(`✗ Error: ${error.message || "Submission failed"}`);
     } finally {
       setLoading(false);
     }
@@ -52,7 +76,7 @@ export default function SafetyFireRequestForm() {
   return (
     <div className="safety-form-container">
       <h1 className="form-title">SAFETY FIRE REQUEST FORM</h1>
-      
+
       {message && (
         <div className={`message ${message.includes("Error") ? "error" : "success"}`}>
           {message}
@@ -104,9 +128,66 @@ export default function SafetyFireRequestForm() {
         {coverageType === "static" && (
           <StaticTestSection formData={formData} handleInputChange={handleInputChange} />
         )}
+        {coverageType === "thermostructural" && (
+          <ThermostructuralSection formData={formData} handleInputChange={handleInputChange} />
+        )}
+        {coverageType === "pressure" && (
+          <PressureTestSection formData={formData} handleInputChange={handleInputChange} />
+        )}
+        {coverageType === "grt" && (
+          <GRTSection formData={formData} handleInputChange={handleInputChange} />
+        )}
+        {coverageType === "alignment" && (
+          <AlignmentInspectionSection formData={formData} handleInputChange={handleInputChange} />
+        )}
+        {coverageType === "radiography" && (
+          <RadiographySection formData={formData} handleInputChange={handleInputChange} />
+        )}
+        {coverageType === "hydrobasin" && (
+          <HydrobasinSection formData={formData} handleInputChange={handleInputChange} />
+        )}
         {coverageType === "transportation" && (
           <TransportationSection formData={formData} handleInputChange={handleInputChange} />
         )}
+        {coverageType === "other" && (
+          <OtherSection formData={formData} handleInputChange={handleInputChange} />
+        )}
+
+        {/* DECLARATION */}
+        <div className="declaration-box">
+          <input 
+            type="checkbox" 
+            id="declaration" 
+            checked={declared}
+            onChange={(e) => setDeclared(e.target.checked)}
+            required 
+          />
+          <label htmlFor="declaration" className="form-label">
+            I will provide suitable PPEs to all involved in hazardous activities
+            and will be held responsible for violation of safety guidelines.
+            <span className="readmore"> READ MORE</span>
+            <br />
+            I will inform safety division telephonically before commencement of activity.{" "}
+            <span style={{ color: "red" }}>*</span>
+          </label>
+        </div>
+
+        {/* APPROVALS */}
+        <div className="approvals-container">
+          <div className="approvals-left">
+            <h3>Head, SFEED</h3>
+            <p>Recommended / Not Recommended</p>
+            <h3>Work Allocated To</h3>
+            <h3>GD-T&S</h3>
+            <p>Approved / Not Approved</p>
+          </div>
+          <div className="approvals-right">
+            <label>Name & Designation</label>
+            <input type="text" className="form-input" disabled placeholder="To be filled by approver" />
+            <label>Contact No.</label>
+            <input type="text" className="form-input" disabled placeholder="To be filled by approver" />
+          </div>
+        </div>
 
         {/* BUTTONS */}
         <div className="button-group">

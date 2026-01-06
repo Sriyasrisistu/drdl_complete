@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
-export default function StaticTestSection({ formData, handleInputChange }) {
-  const [testBed, setTestBed] = useState("");
+export default function PressureTestSection({ formData, handleInputChange }) {
+  const [workCentre, setWorkCentre] = useState("");
   const [tarbStatus, setTarbStatus] = useState("");
   const [activitySchedule, setActivitySchedule] = useState("");
   const [ambulance, setAmbulance] = useState("");
@@ -13,28 +13,22 @@ export default function StaticTestSection({ formData, handleInputChange }) {
       <label className="form-label">Division</label>
       <p className="form-static-text">{formData.division || "Not Set"}</p>
 
-      <label className="form-label">Test Bed *</label>
+      <label className="form-label">Work Centre *</label>
       <select
         className="form-select"
-        value={testBed}
-        onChange={(e) => setTestBed(e.target.value)}
+        value={workCentre}
+        onChange={(e) => setWorkCentre(e.target.value)}
         required
       >
-        <option value="">Select Test Bed</option>
-        <option value="HTF">HTF</option>
-        <option value="VTF">VTF</option>
-        <option value="MFT">MFT</option>
-        <option value="SCRAMJET">SCRAMJET</option>
-        <option value="SFDR">SFDR</option>
-        <option value="100T">100T</option>
-        <option value="2T">2T</option>
-        <option value="6COMP">6-COMPONENT</option>
+        <option value="">Select Work Centre</option>
+        <option value="ASTC">ASTC</option>
+        <option value="SSTC">SSTC</option>
         <option value="other">ANY OTHER (Specify)</option>
       </select>
-      {testBed === "other" && (
+      {workCentre === "other" && (
         <input
           type="text"
-          placeholder="Specify Test Bed"
+          placeholder="Specify Work Centre"
           className="form-input placeholder-box"
           required
         />

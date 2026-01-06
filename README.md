@@ -1,23 +1,309 @@
 # DRDL Fire Management System
 
-A comprehensive full-stack web application for managing safety fire requests at DRDL (Defence Research and Development Laboratory).
+A comprehensive Spring Boot + React application for managing safety fire requests across DRDL (Defence Research and Development Laboratory).
 
-##  Quick Start
+## Project Structure
 
-### Prerequisites
-- Java 17+
-- Node.js 16+
-- Oracle Database 11g/12c
-- Maven 3.8.1+
+```
+drdl-mini/
+├── backend/              # Spring Boot REST API
+│   ├── src/main/java
+│   ├── src/test/java
+│   └── pom.xml
+├── frontend/             # React UI
+│   ├── src/components
+│   ├── src/services
+│   ├── src/styles
+│   └── package.json
+├── documentation/        # Project documentation
+└── README.md
+```
 
-### Installation
+## Tech Stack
 
 **Backend:**
+- Java 17
+- Spring Boot 3.1.5
+- Spring Data JPA
+- Hibernate
+- H2 Database (development) / Oracle Database (production)
+- Maven
+
+**Frontend:**
+- React 18.2
+- CSS3 (responsive design)
+- Jest & React Testing Library
+
+## Prerequisites
+
+- **Java:** JDK 17 or higher
+- **Node.js:** v14 or higher with npm
+- **Maven:** v3.8 or higher
+- **Oracle Database:** Optional (if using Oracle profile)
+
+## Quick Start
+
+### 1. Clone & Navigate
+
+```bash
+git clone https://github.com/Sriyasrisistu/min_drdl.git
+cd drdl-mini
+```
+
+### 2. Backend Setup & Run
+
 ```bash
 cd backend
+
+# Install dependencies (Maven)
 mvn clean install
+
+# Run with H2 (default - development)
 mvn spring-boot:run
+
+# OR Run with Oracle (production - requires Oracle connection)
+# Set environment variables first:
+# Windows PowerShell:
+$env:ORACLE_URL='jdbc:oracle:thin:@//HOST:PORT/SERVICE'
+$env:ORACLE_USER='system'
+$env:ORACLE_PASSWORD='mini1912'
+
+# Then run with oracle profile:
+mvn -Dspring-boot.run.profiles=oracle spring-boot:run
 ```
+
+**Backend runs at:** http://localhost:8080  
+**H2 Console (dev):** http://localhost:8080/h2-console (username: `sa`, password: empty)
+
+### 3. Frontend Setup & Run
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+```
+
+**Frontend runs at:** http://localhost:3000
+
+### 4. Test the Integration
+
+Open http://localhost:3000 in your browser and:
+
+1. Select a **Type of Safety Coverage** (e.g., "INTEGRATION")
+2. Enter a **Personnel Number** (e.g., "123456")
+3. Fill in the coverage-specific fields
+4. Check the safety declaration
+5. Click **SEND TO HEAD, SFEED**
+
+Expected API call: `POST http://localhost:8080/api/v1/safety-requests`
+
+Verify in browser DevTools → Network tab.
+
+## Running Tests
+
+### Backend Tests
+
+```bash
+cd backend
+
+# Run all tests
+mvn test
+
+# Run with coverage
+mvn jacoco:report
+
+# View HTML coverage report
+# Open target/site/jacoco/index.html in browser
+```
+
+### Frontend Tests
+
+```bash
+cd frontend
+
+# Run tests in watch mode (press 'a' to run all)
+npm test
+
+# Run tests once with coverage
+npm run test:coverage
+
+# View coverage report
+# Open coverage/lcov-report/index.html in browser
+```
+
+## API Endpoints
+
+### Safety Requests
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/safety-requests` | Create new request |
+| GET | `/api/v1/safety-requests` | Get all requests |
+| GET | `/api/v1/safety-requests/{id}` | Get request by ID |
+| PUT | `/api/v1/safety-requests/{id}` | Update request |
+| DELETE | `/api/v1/safety-requests/{id}` | Delete request |
+| GET | `/api/v1/safety-requests/coverage/{coverage}` | Get by coverage type |
+
+### Request Body Example
+
+```json
+{
+  "personnelNumber": "123456",
+  "safetyCoverage": "integration",
+  "directorate": "DRDL",
+  "division": "Engineering",
+  "integrationFacility": "NGRAM",
+  "articleDetails": "Details of equipment",
+  "workDescription": "Description of work",
+  "activitySchedule": "available",
+  "ambulanceRequired": "required",
+  "testBed": "HTF",
+  "workCentre": "TSTC"
+}
+```
+
+## Configuration
+
+### Database Profiles
+
+#### H2 (Development - Default)
+**File:** `backend/src/main/resources/application.properties`
+
+```properties
+spring.datasource.url=jdbc:h2:mem:drdl;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+```
+
+#### Oracle (Production)
+**File:** `backend/src/main/resources/application-oracle.properties`
+
+Set environment variables:
+```bash
+ORACLE_URL=jdbc:oracle:thin:@//hostname:1521/SERVICENAME
+ORACLE_USER=system
+ORACLE_PASSWORD=mini1912
+```
+
+Then activate profile:
+```bash
+mvn -Dspring-boot.run.profiles=oracle spring-boot:run
+```
+
+## Frontend Coverage Types
+
+1. **INTEGRATION** - Integration facility testing (NGRAM, QRSAM, ASTRA, etc.)
+2. **STATIC TEST** - Static testing on various test beds
+3. **THERMOSTRUCTURAL** - Thermal testing (TSTC)
+4. **PRESSURE TEST** - Pressure testing (ASTC, SSTC)
+5. **GRT** - Gas Recirculation Testing
+6. **ALIGNMENT INSPECTION** - Alignment checks (AIC-I, AIC-II)
+7. **RADIOGRAPHY** - Radiographic inspection (LARC, NDED)
+8. **HYDROBASIN** - Hydrobasin testing
+9. **TRANSPORTATION** - Equipment transportation safety
+10. **OTHER** - Custom safety coverage type
+
+## Error Handling
+
+- API errors are caught and displayed as red error messages on the form
+- Frontend validation prevents submission without required fields
+- Backend logs are available in console during development
+
+## Common Issues & Solutions
+
+### Port 8080 Already in Use
+```bash
+# Kill process on port 8080 (Windows PowerShell)
+Get-Process -Id (Get-NetTCPConnection -LocalPort 8080).OwningProcess | Stop-Process
+
+# Or use a different port:
+mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=9090"
+```
+
+### Port 3000 Already in Use
+```bash
+# React will prompt to use a different port, or set manually:
+PORT=3001 npm start
+```
+
+### CORS Errors
+Frontend and backend CORS is configured in:
+- **Backend:** `SafetyRequestController.java` (@CrossOrigin annotation)
+- **Frontend API URL:** `frontend/src/services/apiService.js`
+
+Ensure both are pointing to the correct URLs.
+
+### Oracle Connection Fails
+1. Verify Oracle credentials are correct
+2. Check firewall/network access to Oracle host
+3. Verify ORACLE_URL format: `jdbc:oracle:thin:@//hostname:port/servicename`
+4. Ensure `ojdbc11` library is in classpath (Maven dependency)
+
+## Build & Deploy
+
+### Build Backend JAR
+```bash
+cd backend
+mvn clean package
+# Output: target/fire-management-system-1.0.0.jar
+```
+
+### Build Frontend Dist
+```bash
+cd frontend
+npm run build
+# Output: build/ directory (ready for static hosting)
+```
+
+## Docker Support (Optional)
+
+Create a `Dockerfile` in the backend root:
+```dockerfile
+FROM openjdk:17-slim
+COPY target/fire-management-system-1.0.0.jar /app.jar
+ENTRYPOINT ["java", "-jar", "/app.jar"]
+EXPOSE 8080
+```
+
+Build and run:
+```bash
+docker build -t drdl-backend:latest .
+docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=oracle drdl-backend:latest
+```
+
+## Documentation
+
+- [API Documentation](./documentation/API_DOCUMENTATION.md)
+- [Setup Guide](./documentation/SETUP_GUIDE.md)
+
+## Git Workflow
+
+```bash
+# Stage changes
+git add -A
+
+# Commit
+git commit -m "Add feature or fix: describe changes"
+
+# Push to main branch
+git push origin main
+```
+
+## Contact & Support
+
+For issues or questions, create an issue in the GitHub repository:  
+https://github.com/Sriyasrisistu/min_drdl/issues
+
+## License
+
+Proprietary - DRDL
+
 
 **Frontend:**
 ```bash

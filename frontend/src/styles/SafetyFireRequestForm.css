@@ -4,20 +4,12 @@
   --mint-white: #F0FDF4;
   --neutral-gray: #6B7280;
   --light-green: #34D399;
-  --red-error: #DC2626;
-  --green-success: #16A34A;
-}
-
-* {
-  box-sizing: border-box;
 }
 
 body {
   background-color: var(--mint-white);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", sans-serif;
   color: var(--forest-green);
-  margin: 0;
-  padding: 0;
 }
 
 .safety-form-container {
@@ -35,7 +27,25 @@ body {
   font-weight: bold;
   margin-bottom: 30px;
   color: var(--forest-green);
-  letter-spacing: 0.5px;
+}
+
+.message {
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.message.success {
+  background-color: #d1f7d6;
+  border: 1px solid var(--emerald);
+  color: var(--forest-green);
+}
+
+.message.error {
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #991b1b;
 }
 
 .form-section {
@@ -51,21 +61,19 @@ body {
   display: block;
   margin-top: 15px;
   margin-bottom: 5px;
-  color: var(--forest-green);
 }
 
 .form-input,
 textarea,
 select {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   font-size: 1rem;
   border: 1px solid var(--neutral-gray);
   border-radius: 8px;
   background-color: var(--mint-white);
-  transition: all 0.2s ease-in-out;
+  transition: 0.2s;
   margin-top: 5px;
-  font-family: inherit;
 }
 
 .form-input:focus,
@@ -74,99 +82,99 @@ select:focus {
   border-color: var(--emerald);
   outline: none;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-  background-color: #fff;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 100px;
 }
 
 .form-static-text {
   background: #f8fafc;
   border: 1px dashed var(--neutral-gray);
-  padding: 12px;
+  padding: 10px;
   border-radius: 8px;
   color: var(--neutral-gray);
   margin-bottom: 10px;
-  margin-top: 5px;
-}
-
-.message {
-  padding: 15px 20px;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  border-left: 4px solid;
-}
-
-.message.success {
-  background-color: #D1FAE5;
-  color: var(--green-success);
-  border-left-color: var(--green-success);
-}
-
-.message.error {
-  background-color: #FEE2E2;
-  color: var(--red-error);
-  border-left-color: var(--red-error);
 }
 
 .radio-group {
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .radio-group label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.radio-group input[type="radio"] {
-  cursor: pointer;
-  width: auto;
-  margin: 0;
-  padding: 0;
+  gap: 6px;
 }
 
 .date-group {
   display: flex;
   gap: 16px;
-  margin-top: 10px;
-}
-
-.date-group input {
-  flex: 1;
-  min-width: 150px;
+  margin-top: 5px;
+  margin-bottom: 10px;
 }
 
 .transportation-group {
   display: flex;
   gap: 16px;
-  margin-top: 10px;
-}
-
-.transportation-group input {
-  flex: 1;
-  min-width: 150px;
+  margin-top: 5px;
+  margin-bottom: 10px;
 }
 
 .other-incharge-form {
-  background: #e8f5e9;
-  padding: 15px;
-  border-left: 4px solid var(--emerald);
-  border-radius: 6px;
+  background: #f0f8ff;
+  padding: 16px;
+  border-radius: 8px;
   margin-top: 10px;
+  border-left: 4px solid var(--emerald);
 }
 
 .placeholder-box {
-  border: 1px solid var(--light-green) !important;
-  background-color: #f0fdf4 !important;
+  margin-top: 8px;
+}
+
+.declaration-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 25px;
+}
+
+.declaration-box input[type="checkbox"] {
+  margin-top: 3px;
+}
+
+.readmore {
+  color: var(--emerald);
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.approvals-container {
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid var(--neutral-gray);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.approvals-left h3 {
+  margin: 0 0 5px 0;
+  color: var(--forest-green);
+}
+
+.approvals-left p {
+  margin: 0 0 15px 0;
+  color: var(--neutral-gray);
+}
+
+.approvals-right label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-weight: 600;
 }
 
 .button-group {
@@ -174,127 +182,73 @@ textarea {
   justify-content: flex-end;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 2px solid var(--light-green);
+  margin-top: 20px;
 }
 
 .btn {
   font-family: "Segoe UI", sans-serif;
   font-weight: 600;
   font-size: 1rem;
-  padding: 0.85rem 1.85rem;
+  padding: 0.75rem 1.75rem;
   border-radius: 0.75rem;
   border: none;
   cursor: pointer;
-  transition: all 0.3s ease-in-out;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  transition: all 0.2s ease-in-out;
 }
 
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
+/* Primary — Send Button */
 .send-btn {
   background-color: var(--emerald);
   color: white;
   box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
 }
 
-.send-btn:hover:not(:disabled) {
+.send-btn:hover {
   background-color: #059669;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 12px rgba(6, 78, 59, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 10px rgba(6, 78, 59, 0.25);
 }
 
-.send-btn:active:not(:disabled) {
+.send-btn:active {
   background-color: #047857;
   transform: translateY(0);
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Ghost — Save Button */
 .save-btn {
   background-color: transparent;
   color: var(--forest-green);
   border: 2px solid var(--forest-green);
 }
 
-.save-btn:hover:not(:disabled) {
+.save-btn:hover {
   background-color: var(--mint-white);
   border-color: var(--emerald);
   color: var(--emerald);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
-.save-btn:active:not(:disabled) {
+.save-btn:active {
   background-color: #e6f9ed;
   transform: translateY(0);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .safety-form-container {
-    padding: 30px 20px;
-    margin: 20px 10px;
-  }
-
-  .form-title {
-    font-size: 1.5rem;
-  }
-
-  .date-group,
-  .transportation-group {
+/* Responsive */
+@media (max-width: 600px) {
+  .date-group {
     flex-direction: column;
   }
-
-  .date-group input,
-  .transportation-group input {
-    width: 100%;
-  }
-
   .button-group {
     flex-direction: column;
+    align-items: stretch;
   }
-
   .btn {
     width: 100%;
-  }
-
-  .radio-group {
-    flex-direction: column;
-    gap: 10px;
-  }
-}
-
-@media (max-width: 600px) {
-  .safety-form-container {
-    padding: 20px 15px;
-    border-radius: 12px;
-  }
-
-  .form-section {
-    padding: 15px 20px;
-  }
-
-  .form-label {
-    font-size: 0.95rem;
-  }
-
-  .form-input,
-  textarea,
-  select {
-    padding: 10px;
-    font-size: 16px;
-  }
-
-  .form-title {
-    font-size: 1.25rem;
-    margin-bottom: 20px;
-  }
-
-  .btn {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.9rem;
   }
 }
