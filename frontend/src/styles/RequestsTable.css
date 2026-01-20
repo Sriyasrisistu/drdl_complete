@@ -124,6 +124,23 @@
   color: #084298;
 }
 
+.ambulance {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.ambulance.yes {
+  background-color: #D1F7D6;
+  color: #064E3B;
+}
+
+.ambulance.no {
+  background-color: #F0F0F0;
+  color: #6B7280;
+}
+
 .actions {
   white-space: nowrap;
   text-align: center;

@@ -1,34 +1,34 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ApiService from "../services/apiService";
-import UpdateRequestModal from "./UpdateRequestModal";
 import "../styles/RequestsTable.css";
 
 export default function RequestsTable({ personnelNumber, refresh, onRequestSelect }) {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   useEffect(() => {
+    const fetchRequests = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const response = await ApiService.getRequestsByPersonnelNumber(personnelNumber);
+        setRequests(response);
+      } catch (err) {
+        setError("Failed to fetch requests");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (personnelNumber) {
       fetchRequests();
     }
   }, [personnelNumber, refresh]);
-
-  const fetchRequests = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await ApiService.getRequestsByPersonnelNumber(personnelNumber);
-      setRequests(response);
-    } catch (err) {
-      setError("Failed to fetch requests");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this request?")) {
@@ -48,21 +48,12 @@ export default function RequestsTable({ personnelNumber, refresh, onRequestSelec
   };
 
   const handleEdit = (request) => {
-    setSelectedRequest(request);
-    setShowUpdateModal(true);
+    navigate(`/edit/${request.requestId}`);
   };
 
   const handleRowClick = (request) => {
     setSelectedRequest(request);
     onRequestSelect(request);
-  };
-
-  const handleUpdateSuccess = (updatedRequest) => {
-    setRequests(requests.map(r => r.requestId === updatedRequest.requestId ? updatedRequest : r));
-    setSelectedRequest(updatedRequest);
-    onRequestSelect(updatedRequest);
-    setShowUpdateModal(false);
-    alert("Request updated successfully");
   };
 
   if (!personnelNumber) {
@@ -94,8 +85,8 @@ export default function RequestsTable({ personnelNumber, refresh, onRequestSelec
               <th>Coverage Type</th>
               <th>From Date</th>
               <th>To Date</th>
-              <th>Directorate</th>
-              <th>Division</th>
+              <th>Activity Incharge</th>
+              <th>Ambulance</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -126,8 +117,12 @@ export default function RequestsTable({ personnelNumber, refresh, onRequestSelec
                     : "N/A"
                   }
                 </td>
-                <td>{request.directorate || "N/A"}</td>
-                <td>{request.division || "N/A"}</td>
+                <td>{request.activityInchargeName || "N/A"}</td>
+                <td>
+                  <span className={`ambulance ${request.ambulanceRequired?.toLowerCase() || "no"}`}>
+                    {request.ambulanceRequired || "N/A"}
+                  </span>
+                </td>
                 <td>
                   <span className={`status ${request.headSfeedStatus || "pending"}`}>
                     {request.headSfeedStatus || "Pending"}
@@ -154,13 +149,6 @@ export default function RequestsTable({ personnelNumber, refresh, onRequestSelec
           </tbody>
         </table>
       </div>
-
-      <UpdateRequestModal 
-        isOpen={showUpdateModal}
-        request={selectedRequest}
-        onClose={() => setShowUpdateModal(false)}
-        onUpdate={handleUpdateSuccess}
-      />
     </div>
   );
 }

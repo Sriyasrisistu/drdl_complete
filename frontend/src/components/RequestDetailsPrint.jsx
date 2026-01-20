@@ -1,7 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './RequestDetailsPrint.css';
 
 const RequestDetailsPrint = ({ request, onClose }) => {
+  const [selectedTestTypes, setSelectedTestTypes] = useState({
+    integration: false,
+    staticTest: false,
+    thermostructural: false,
+    pressureTest: false,
+    grt: false,
+    alignment: false,
+    radiography: false,
+    hydrobasin: false,
+    transportation: false,
+    other: false
+  });
+
   if (!request) {
     return (
       <div className="no-request-message">
@@ -10,104 +23,440 @@ const RequestDetailsPrint = ({ request, onClose }) => {
     );
   }
 
-  const handlePrint = () => {
-    const printWindow = window.open('', '', 'height=800,width=1000');
-    const content = document.getElementById('print-content').innerHTML;
+  // Determine which test types have data
+  const availableTestTypes = {
+    integration: !!request.integrationFacility,
+    staticTest: !!request.testBed,
+    thermostructural: false,
+    pressureTest: false,
+    grt: false,
+    alignment: false,
+    radiography: false,
+    hydrobasin: false,
+    transportation: !!request.transportation,
+    other: !!request.otherDetails
+  };
+
+  const toggleTestType = (testType) => {
+    setSelectedTestTypes(prev => ({
+      ...prev,
+      [testType]: !prev[testType]
+    }));
+  };
+
+  const getSelectedCount = () => {
+    return Object.values(selectedTestTypes).filter(v => v).length;
+  };
+
+  const generatePrintContent = () => {
+    const baseContent = `
+      <div class="header">
+        <h1>SAFETY &amp; FIRE COVERAGE REQUEST FORM</h1>
+        <p>Defence Research and Development Laboratory</p>
+      </div>
+    `;
+
+    let pages = [];
+
+    // Add request information section (always included)
+    const requestInfoPage = `
+      <div class="page">
+        <div class="header">
+          <h1>REQUEST INFORMATION</h1>
+        </div>
+        <div class="section">
+          <div class="section-title">REQUEST DETAILS</div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-label">Unique Request ID</div>
+              <div class="field-value">${request.uniqueId}</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Personnel Number</div>
+              <div class="field-value">${request.personnelNumber}</div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-label">Date of Request</div>
+              <div class="field-value">${request.dateOfRequest ? new Date(request.dateOfRequest).toLocaleDateString() : "N/A"}</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Safety Coverage</div>
+              <div class="field-value">${request.safetyCoverage}</div>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">ORGANIZATIONAL DETAILS</div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-label">Directorate</div>
+              <div class="field-value">${request.directorate}</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Division</div>
+              <div class="field-value">${request.division}</div>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">ARTICLE/PROJECT DETAILS</div>
+          <div class="field-row full">
+            <div class="field">
+              <div class="field-label">Article Details</div>
+              <div class="field-value">${request.articleDetails || "N/A"}</div>
+            </div>
+          </div>
+          <div class="field-row full">
+            <div class="field">
+              <div class="field-label">Work Description</div>
+              <div class="field-value">${request.workDescription || "N/A"}</div>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">ACTIVITY INCHARGE DETAILS</div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-label">Name</div>
+              <div class="field-value">${request.activityInchargeName || "N/A"}</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Organization</div>
+              <div class="field-value">${request.activityInchargeOrg || "N/A"}</div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-label">Designation</div>
+              <div class="field-value">${request.designation || "N/A"}</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Phone</div>
+              <div class="field-value">${request.activityInchargePhone || "N/A"}</div>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">ACTIVITY SCHEDULE</div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-label">From Date</div>
+              <div class="field-value">${request.activityFromDate ? new Date(request.activityFromDate).toLocaleDateString() : "N/A"}</div>
+            </div>
+            <div class="field">
+              <div class="field-label">To Date</div>
+              <div class="field-value">${request.activityToDate ? new Date(request.activityToDate).toLocaleDateString() : "N/A"}</div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-label">Ambulance Required</div>
+              <div class="field-value">${request.ambulanceRequired || "N/A"}</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Work Centre</div>
+              <div class="field-value">${request.workCentre || "N/A"}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    pages.push(requestInfoPage);
+
+    // Integration Test Page
+    if (selectedTestTypes.integration && availableTestTypes.integration) {
+      pages.push(`
+        <div class="page">
+          <div class="section">
+            <div class="section-title">INTEGRATION TEST</div>
+            <div class="field-row">
+              <div class="field">
+                <div class="field-label">Integration Facility</div>
+                <div class="field-value">${request.integrationFacility || "N/A"}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    // Static Test Page
+    if (selectedTestTypes.staticTest && availableTestTypes.staticTest) {
+      pages.push(`
+        <div class="page">
+          <div class="section">
+            <div class="section-title">STATIC TEST</div>
+            <div class="field-row">
+              <div class="field">
+                <div class="field-label">Test Bed</div>
+                <div class="field-value">${request.testBed || "N/A"}</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Date of Test</div>
+                <div class="field-value">${request.dateOfTest ? new Date(request.dateOfTest).toLocaleDateString() : "N/A"}</div>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <div class="field-label">Test Schedule Time</div>
+                <div class="field-value">${request.testScheduleTime || "N/A"}</div>
+              </div>
+              <div class="field">
+                <div class="field-label">TARB Clearance</div>
+                <div class="field-value">${request.tarbClearance || "N/A"}</div>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <div class="field-label">Test Controller Name</div>
+                <div class="field-value">${request.testControllerName || "N/A"}</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Test Controller Designation</div>
+                <div class="field-value">${request.testControllerDesignation || "N/A"}</div>
+              </div>
+            </div>
+            <div class="field-row full">
+              <div class="field">
+                <div class="field-label">Reference No</div>
+                <div class="field-value">${request.referenceNo || "N/A"}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    // Transportation Page
+    if (selectedTestTypes.transportation && availableTestTypes.transportation) {
+      pages.push(`
+        <div class="page">
+          <div class="section">
+            <div class="section-title">TRANSPORTATION DETAILS</div>
+            <div class="field-row">
+              <div class="field">
+                <div class="field-label">Transportation</div>
+                <div class="field-value">${request.transportation || "N/A"}</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Transportation Schedule Time</div>
+                <div class="field-value">${request.transScheduleTime || "N/A"}</div>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <div class="field-label">Trans Incharge</div>
+                <div class="field-value">${request.transIncharge || "N/A"}</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Vehicle Details</div>
+                <div class="field-value">${request.vehicleDetails || "N/A"}</div>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <div class="field-label">Driver Name</div>
+                <div class="field-value">${request.driverName || "N/A"}</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Driver Designation</div>
+                <div class="field-value">${request.driverDesignation || "N/A"}</div>
+              </div>
+            </div>
+            <div class="field-row full">
+              <div class="field">
+                <div class="field-label">Driver Authorization</div>
+                <div class="field-value">${request.driverAuth || "N/A"}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    // Other Details Page
+    if (selectedTestTypes.other && availableTestTypes.other) {
+      pages.push(`
+        <div class="page">
+          <div class="section">
+            <div class="section-title">OTHER DETAILS</div>
+            <div class="field-row full">
+              <div class="field">
+                <div class="field-label">Other Details</div>
+                <div class="field-value">${request.otherDetails || "N/A"}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    // Approval Page (always included)
+    pages.push(`
+      <div class="page">
+        <div class="section">
+          <div class="section-title">APPROVAL STATUS</div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-label">Head SFEED Status</div>
+              <div class="field-value">${request.headSfeedStatus || "N/A"}</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Work Allocated To</div>
+              <div class="field-value">${request.workAllocatedTo || "N/A"}</div>
+            </div>
+          </div>
+          <div class="field-row full">
+            <div class="field">
+              <div class="field-label">GD TS Status</div>
+              <div class="field-value">${request.gdTsStatus || "N/A"}</div>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">HEAD, SFEED APPROVAL</div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-label">Recommendation</div>
+              <div class="field-value">Recommended / Not Recommended</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Work Allocation</div>
+              <div class="field-value">GD-T&S</div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <div class="field-label">Approval Status</div>
+              <div class="field-value">Approved / Not Approved</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Name & Designation</div>
+              <div class="field-value">To be filled by approver</div>
+            </div>
+          </div>
+          <div class="field-row full">
+            <div class="field">
+              <div class="field-label">Contact No.</div>
+              <div class="field-value">To be filled by approver</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+
+    return baseContent + pages.join('');
+  };
+
+  const handleSelectiveprint = () => {
+    if (getSelectedCount() === 0) {
+      alert('Please select at least one test type to print');
+      return;
+    }
+
+    const printWindow = window.open('', '', 'height=900,width=1200');
+    const content = generatePrintContent();
     
     printWindow.document.write(`
       <html>
         <head>
           <title>Safety Fire Request - ${request.uniqueId}</title>
           <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
             body {
               font-family: Arial, sans-serif;
-              margin: 20px;
               color: #333;
+              line-height: 1.3;
             }
-            @page { size: A4 landscape; margin: 20mm; }
+            @page { 
+              size: A4 landscape; 
+              margin: 12mm;
+            }
+            .page {
+              page-break-after: always;
+              padding: 20px;
+              min-height: 100vh;
+            }
+            .page:last-child {
+              page-break-after: avoid;
+            }
             .header {
               text-align: center;
-              border-bottom: 2px solid #333;
-              padding-bottom: 15px;
-              margin-bottom: 20px;
+              border-bottom: 2px solid #064E3B;
+              padding-bottom: 10px;
+              margin-bottom: 12px;
             }
             .header h1 {
-              margin: 0 0 5px 0;
-              color: #1a3a52;
-              font-size: 18px;
+              margin: 0 0 3px 0;
+              color: #064E3B;
+              font-size: 16px;
               letter-spacing: 0.6px;
             }
             .header p {
-              margin: 5px 0;
-              font-size: 12px;
-            }
-            .request-id {
-              text-align: right;
-              font-weight: bold;
-              margin-bottom: 15px;
-              font-size: 14px;
+              margin: 2px 0;
+              font-size: 11px;
+              color: #6B7280;
             }
             .section {
-              margin-bottom: 20px;
+              margin-bottom: 10px;
               page-break-inside: avoid;
             }
             .section-title {
-              background-color: #667eea;
-              color: white;
-              padding: 8px 12px;
-              margin-bottom: 10px;
+              background-color: #D1F7D6;
+              color: #064E3B;
+              padding: 5px 8px;
+              margin-bottom: 6px;
               font-weight: bold;
-              font-size: 13px;
+              font-size: 11px;
+              border-left: 4px solid #10B981;
             }
             .field-row {
               display: grid;
               grid-template-columns: 1fr 1fr;
-              gap: 15px;
-              margin-bottom: 12px;
+              gap: 8px;
+              margin-bottom: 8px;
             }
             .field-row.full {
               grid-template-columns: 1fr;
             }
             .field {
-              border: 1px solid #ddd;
-              padding: 8px;
-              background-color: #f9f9f9;
-              font-size: 12px;
+              border: 1px solid #D1F7D6;
+              padding: 5px 6px;
+              background-color: #F0FDF4;
+              font-size: 10px;
             }
             .field-label {
               font-weight: bold;
-              color: #667eea;
-              margin-bottom: 3px;
-              font-size: 11px;
+              color: #064E3B;
+              margin-bottom: 2px;
+              font-size: 9px;
             }
             .field-value {
               color: #333;
               word-break: break-word;
-            }
-            .footer {
-              margin-top: 40px;
-              border-top: 1px solid #ddd;
-              padding-top: 15px;
-              font-size: 11px;
-              text-align: center;
-              color: #666;
+              font-size: 10px;
             }
             @media print {
               body {
                 margin: 0;
               }
+              .page {
+                page-break-after: always;
+                page-break-inside: avoid;
+              }
             }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1>SAFETY &amp; FIRE COVERAGE REQUEST FORM</h1>
-            <p>Defence Research and Development Laboratory</p>
-          </div>
           ${content}
-          <div class="footer">
-            <p>Document Generated: ${new Date().toLocaleString()}</p>
-            <p>This is an electronically generated document.</p>
+          <div style="text-align:center; font-size:9px; color:#6B7280; margin-top:20px;">
+            Generated: ${new Date().toLocaleString()}
           </div>
         </body>
       </html>
@@ -122,237 +471,49 @@ const RequestDetailsPrint = ({ request, onClose }) => {
   return (
     <div className="request-details-container">
       <div className="details-header">
-        <h2>Request Details</h2>
-        <button onClick={handlePrint} className="btn-print-large">
-          🖨️ Print to PDF
-        </button>
-        <button onClick={onClose} className="btn-close">
-          ✕
-        </button>
+        <h2>Request Details & Print Options</h2>
+        <div className="header-buttons">
+          <button onClick={handleSelectiveprint} className="btn-print-selective">
+            🖨️ Print Selected Tests
+          </button>
+          <button onClick={onClose} className="btn-close">
+            ✕
+          </button>
+        </div>
       </div>
 
-      <div id="print-content">
-        {/* REQUEST INFORMATION SECTION */}
-        <div className="section">
-          <div className="section-title">REQUEST INFORMATION</div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Unique Request ID</div>
-              <div className="field-value">{request.uniqueId}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Personnel Number</div>
-              <div className="field-value">{request.personnelNumber}</div>
-            </div>
-          </div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Date of Request</div>
-              <div className="field-value">{request.dateOfRequest ? new Date(request.dateOfRequest).toLocaleDateString() : "N/A"}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Safety Coverage</div>
-              <div className="field-value">{request.safetyCoverage}</div>
-            </div>
-          </div>
+      <div className="print-options">
+        <h3>Select Test Types to Print:</h3>
+        <div className="test-types-grid">
+          {Object.entries(availableTestTypes).map(([testType, available]) => (
+            available && (
+              <label key={testType} className="test-type-checkbox">
+                <input
+                  type="checkbox"
+                  checked={selectedTestTypes[testType]}
+                  onChange={() => toggleTestType(testType)}
+                />
+                <span className="checkbox-label">
+                  {testType === 'integration' && 'Integration Test'}
+                  {testType === 'staticTest' && 'Static Test'}
+                  {testType === 'thermostructural' && 'Thermostructural'}
+                  {testType === 'pressureTest' && 'Pressure Test'}
+                  {testType === 'grt' && 'GRT'}
+                  {testType === 'alignment' && 'Alignment Inspection'}
+                  {testType === 'radiography' && 'Radiography'}
+                  {testType === 'hydrobasin' && 'Hydrobasin'}
+                  {testType === 'transportation' && 'Transportation'}
+                  {testType === 'other' && 'Other Details'}
+                </span>
+              </label>
+            )
+          ))}
         </div>
+        <p className="print-info">Selected: {getSelectedCount()} test type(s) • Each will start on a new landscape page</p>
+      </div>
 
-        {/* ORGANIZATIONAL DETAILS */}
-        <div className="section">
-          <div className="section-title">ORGANIZATIONAL DETAILS</div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Directorate</div>
-              <div className="field-value">{request.directorate}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Division</div>
-              <div className="field-value">{request.division}</div>
-            </div>
-          </div>
-          <div className="field-row full">
-            <div className="field">
-              <div className="field-label">Integration Facility</div>
-              <div className="field-value">{request.integrationFacility}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* ARTICLE/PROJECT DETAILS */}
-        <div className="section">
-          <div className="section-title">ARTICLE/PROJECT DETAILS</div>
-          <div className="field-row full">
-            <div className="field">
-              <div className="field-label">Article Details</div>
-              <div className="field-value">{request.articleDetails}</div>
-            </div>
-          </div>
-          <div className="field-row full">
-            <div className="field">
-              <div className="field-label">Work Description</div>
-              <div className="field-value">{request.workDescription}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* ACTIVITY INCHARGE DETAILS */}
-        <div className="section">
-          <div className="section-title">ACTIVITY INCHARGE DETAILS</div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Name</div>
-              <div className="field-value">{request.activityInchargeName}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Organization</div>
-              <div className="field-value">{request.activityInchargeOrg}</div>
-            </div>
-          </div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Designation</div>
-              <div className="field-value">{request.designation}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Phone</div>
-              <div className="field-value">{request.activityInchargePhone}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* ACTIVITY SCHEDULE DETAILS */}
-        <div className="section">
-          <div className="section-title">ACTIVITY SCHEDULE DETAILS</div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Activity From Date</div>
-              <div className="field-value">{request.activityFromDate ? new Date(request.activityFromDate).toLocaleDateString() : "N/A"}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Activity To Date</div>
-              <div className="field-value">{request.activityToDate ? new Date(request.activityToDate).toLocaleDateString() : "N/A"}</div>
-            </div>
-          </div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Activity Schedule</div>
-              <div className="field-value">{request.activitySchedule || "N/A"}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Activity PDF</div>
-              <div className="field-value">{request.activityPdf ? "Available" : "Not Available"}</div>
-            </div>
-          </div>
-          <div className="field-row full">
-            <div className="field">
-              <div className="field-label">Work Centre</div>
-              <div className="field-value">{request.workCentre || "N/A"}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* TEST CONTROLLER DETAILS */}
-        <div className="section">
-          <div className="section-title">TEST DETAILS</div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Test Bed</div>
-              <div className="field-value">{request.testBed || "N/A"}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Date of Test</div>
-              <div className="field-value">{request.dateOfTest ? new Date(request.dateOfTest).toLocaleDateString() : "N/A"}</div>
-            </div>
-          </div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Test Schedule Time</div>
-              <div className="field-value">{request.testScheduleTime || "N/A"}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">TARB Clearance</div>
-              <div className="field-value">{request.tarbClearance || "N/A"}</div>
-            </div>
-          </div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Test Controller Name</div>
-              <div className="field-value">{request.testControllerName || "N/A"}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Test Controller Designation</div>
-              <div className="field-value">{request.testControllerDesignation || "N/A"}</div>
-            </div>
-          </div>
-          <div className="field-row full">
-            <div className="field">
-              <div className="field-label">Reference No</div>
-              <div className="field-value">{request.referenceNo || "N/A"}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* TRANSPORTATION DETAILS */}
-        <div className="section">
-          <div className="section-title">TRANSPORTATION DETAILS</div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Transportation</div>
-              <div className="field-value">{request.transportation || "N/A"}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Transportation Schedule Time</div>
-              <div className="field-value">{request.transScheduleTime || "N/A"}</div>
-            </div>
-          </div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Trans Incharge</div>
-              <div className="field-value">{request.transIncharge || "N/A"}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Vehicle Details</div>
-              <div className="field-value">{request.vehicleDetails || "N/A"}</div>
-            </div>
-          </div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Driver Name</div>
-              <div className="field-value">{request.driverName || "N/A"}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Driver Designation</div>
-              <div className="field-value">{request.driverDesignation || "N/A"}</div>
-            </div>
-          </div>
-          <div className="field-row full">
-            <div className="field">
-              <div className="field-label">Driver Auth</div>
-              <div className="field-value">{request.driverAuth || "N/A"}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* APPROVAL STATUS */}
-        <div className="section">
-          <div className="section-title">APPROVAL STATUS</div>
-          <div className="field-row">
-            <div className="field">
-              <div className="field-label">Head SFEED Status</div>
-              <div className="field-value">{request.headSfeedStatus || "N/A"}</div>
-            </div>
-            <div className="field">
-              <div className="field-label">Work Allocated To</div>
-              <div className="field-value">{request.workAllocatedTo || "N/A"}</div>
-            </div>
-          </div>
-          <div className="field-row full">
-            <div className="field">
-              <div className="field-label">GD TS Status</div>
-              <div className="field-value">{request.gdTsStatus || "N/A"}</div>
-            </div>
-          </div>
-        </div>
+      <div id="print-content" style={{ display: 'none' }}>
+        {/* Hidden content for reference */}
       </div>
     </div>
   );

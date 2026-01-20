@@ -1,10 +1,10 @@
 .request-details-container {
   background: white;
-  border: 1px solid #ddd;
+  border: 1px solid #D1F7D6;
   border-radius: 8px;
   padding: 30px;
   margin-top: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
@@ -14,106 +14,152 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #667eea;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #10B981;
   padding-bottom: 15px;
 }
 
 .details-header h2 {
   margin: 0;
-  color: #333;
+  color: #064E3B;
   font-size: 22px;
 }
 
-.btn-print-large {
-  background-color: #007bff;
+.header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-print-selective {
+  background-color: #10B981;
   color: white;
   border: none;
   padding: 10px 20px;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   font-weight: bold;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
 }
 
-.btn-print-large:hover {
-  background-color: #0056b3;
+.btn-print-selective:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .btn-close {
-  background-color: #6c757d;
+  background-color: #6B7280;
   color: white;
   border: none;
   padding: 8px 12px;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 16px;
   transition: background-color 0.3s;
 }
 
 .btn-close:hover {
-  background-color: #5a6268;
+  background-color: #4B5563;
 }
 
-.section {
+.print-options {
+  background-color: #F0FDF4;
+  border: 2px solid #D1F7D6;
+  border-radius: 8px;
+  padding: 20px;
   margin-bottom: 20px;
-  page-break-inside: avoid;
 }
 
-.section-title {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 10px 15px;
-  margin-bottom: 12px;
-  font-weight: bold;
-  font-size: 14px;
-  border-radius: 4px;
+.print-options h3 {
+  color: #064E3B;
+  margin: 0 0 15px 0;
+  font-size: 16px;
 }
 
-.field-row {
+.test-types-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-bottom: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 15px;
 }
 
-.field-row.full {
-  grid-template-columns: 1fr;
+.test-type-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background-color: white;
+  border: 1.5px solid #D1F7D6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.field {
-  border: 1px solid #ddd;
-  padding: 12px;
-  background-color: #f9f9f9;
-  border-radius: 4px;
+.test-type-checkbox:hover {
+  background-color: #F9FFFE;
+  border-color: #10B981;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
 }
 
-.field-label {
-  font-weight: bold;
-  color: #667eea;
-  margin-bottom: 5px;
+.test-type-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #10B981;
+}
+
+.checkbox-label {
+  color: #064E3B;
+  font-size: 14px;
+  font-weight: 500;
+  user-select: none;
+}
+
+.test-type-checkbox input[type="checkbox"]:checked + .checkbox-label {
+  font-weight: 600;
+}
+
+.print-info {
+  color: #6B7280;
   font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.field-value {
-  color: #333;
-  word-break: break-word;
-  font-size: 13px;
-  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
 }
 
 .no-request-message {
-  background-color: #e8f4f8;
-  border: 2px dashed #667eea;
+  background-color: #F0FDF4;
+  border: 2px dashed #10B981;
   border-radius: 8px;
   padding: 40px 20px;
   text-align: center;
-  color: #667eea;
+  color: #064E3B;
   font-size: 16px;
   margin-top: 20px;
+}
+
+@media (max-width: 900px) {
+  .details-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .details-header h2 {
+    margin-bottom: 10px;
+  }
+
+  .header-buttons {
+    width: 100%;
+  }
+
+  .btn-print-selective {
+    flex: 1;
+  }
+
+  .test-types-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
 }
 
 @media (max-width: 900px) {

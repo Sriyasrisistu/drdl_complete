@@ -31,12 +31,12 @@ const LoginForm = ({ onLoginSuccess }) => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>DRDL Safety Fire Request System</h1>
-        <h2>Employee Login</h2>
+        <h1>DRDL Safety Fire</h1>
+        <h2>Request Management System</h2>
         
         <form onSubmit={handleLogin}>
           <div className="form-group">
-            <label htmlFor="personnelNo">Personnel Number:</label>
+            <label htmlFor="personnelNo">Personnel Number</label>
             <input
               type="text"
               id="personnelNo"
@@ -45,11 +45,12 @@ const LoginForm = ({ onLoginSuccess }) => {
               placeholder="Enter your personnel number"
               required
               disabled={loading}
+              autoComplete="username"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password:</label>
+            <label htmlFor="password">Password</label>
             <input
               type="password"
               id="password"
@@ -58,20 +59,21 @@ const LoginForm = ({ onLoginSuccess }) => {
               placeholder="Enter your password"
               required
               disabled={loading}
+              autoComplete="current-password"
             />
           </div>
 
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" disabled={loading} className="login-btn">
-            {loading ? 'Logging in...' : 'LOGIN'}
+            {loading ? 'Signing In...' : 'SIGN IN'}
           </button>
         </form>
 
         <div className="demo-credentials">
-          <p><strong>Demo Credentials:</strong></p>
-          <p>Personnel No: 001234</p>
-          <p>Password: pass123</p>
+          <p>Demo Account</p>
+          <p>Personnel No: <code>001234</code></p>
+          <p>Password: <code>pass123</code></p>
         </div>
       </div>
     </div>
