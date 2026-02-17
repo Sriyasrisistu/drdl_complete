@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/safety-requests")
-@CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
 public class SafetyRequestController {
     

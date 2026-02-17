@@ -21,6 +21,7 @@
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -38,19 +39,17 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- H2 Database (development) - kept for local dev profile -->
+        <!-- Local development database -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Oracle Database (for production) - available from Maven central as ojdbc11
-             Use the Oracle profile in application properties to activate Oracle settings.
-        -->
+        <!-- Oracle Database - ojdbc8 is stable and compatible with Java 17 -->
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc11</artifactId>
+            <artifactId>ojdbc8</artifactId>
             <version>21.9.0.0</version>
         </dependency>
 
@@ -68,6 +67,10 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <!-- Using Maven Central for ojdbc8 - no authentication needed -->
+    </repositories>
 
     <build>
         <plugins>

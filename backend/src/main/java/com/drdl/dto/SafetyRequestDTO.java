@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
-import java.time.LocalTime;
 
 @Data
 @NoArgsConstructor
@@ -35,10 +34,10 @@ public class SafetyRequestDTO {
     private String testControllerName;
     private String testControllerDesignation;
     private LocalDate dateOfTest;
-    private LocalTime testScheduleTime;
+    private String testScheduleTime;
     private String workCentre;
     private String transportation;
-    private LocalTime transScheduleTime;
+    private String transScheduleTime;
     private String transIncharge;
     private String vehicleDetails;
     private String driverName;

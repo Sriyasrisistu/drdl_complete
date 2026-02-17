@@ -1,111 +1,100 @@
-const SAFETY_REQUEST_URL = 'http://localhost:8080/api/v1/safety-requests';
-const EMPLOYEE_URL = 'http://localhost:8080/api/v1/employees';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
+const SAFETY_REQUEST_URL = `${API_BASE_URL}/api/v1/safety-requests`;
+const EMPLOYEE_URL = `${API_BASE_URL}/api/v1/employees`;
 
 class ApiService {
+  static async request(url, options = {}, defaultErrorMessage = 'Request failed') {
+    const response = await fetch(url, options);
+    const text = await response.text();
+    let data = null;
+
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = text;
+      }
+    }
+
+    if (!response.ok) {
+      const message =
+        (data && typeof data === 'object' && data.message) ||
+        (typeof data === 'string' && data.trim()) ||
+        `${defaultErrorMessage} (HTTP ${response.status})`;
+      throw new Error(message);
+    }
+
+    return data;
+  }
+
   // ==================== AUTHENTICATION ====================
   static login(personnelNo, password) {
-    return fetch(`${EMPLOYEE_URL}/login`, {
+    return ApiService.request(`${EMPLOYEE_URL}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ personnelNo, password }),
-    }).then(response => {
-      if (!response.ok) throw new Error('Failed to login');
-      return response.json();
-    });
+    }, 'Failed to login');
   }
 
   // ==================== EMPLOYEE ENDPOINTS ====================
   static getAllEmployees() {
-    return fetch(`${EMPLOYEE_URL}`)
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch employees');
-        return response.json();
-      });
+    return ApiService.request(`${EMPLOYEE_URL}`, {}, 'Failed to fetch employees');
   }
 
   static getEmployeeByPersonnelNo(personnelNo) {
-    return fetch(`${EMPLOYEE_URL}/${personnelNo}`)
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch employee');
-        return response.json();
-      });
+    return ApiService.request(`${EMPLOYEE_URL}/${personnelNo}`, {}, 'Failed to fetch employee');
   }
 
   // ==================== SAFETY REQUEST ENDPOINTS ====================
   // Create new safety request
   static createRequest(requestData) {
-    return fetch(`${SAFETY_REQUEST_URL}`, {
+    return ApiService.request(`${SAFETY_REQUEST_URL}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestData),
-    }).then(response => {
-      if (!response.ok) throw new Error('Failed to create request');
-      return response.json();
-    });
+    }, 'Failed to create request');
   }
 
   // Update existing request
   static updateRequest(id, requestData) {
-    return fetch(`${SAFETY_REQUEST_URL}/${id}`, {
+    return ApiService.request(`${SAFETY_REQUEST_URL}/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestData),
-    }).then(response => {
-      if (!response.ok) throw new Error('Failed to update request');
-      return response.json();
-    });
+    }, 'Failed to update request');
   }
 
   // Get single request
   static getRequest(id) {
-    return fetch(`${SAFETY_REQUEST_URL}/${id}`)
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch request');
-        return response.json();
-      });
+    return ApiService.request(`${SAFETY_REQUEST_URL}/${id}`, {}, 'Failed to fetch request');
   }
 
   // Get all requests
   static getAllRequests() {
-    return fetch(`${SAFETY_REQUEST_URL}`)
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch requests');
-        return response.json();
-      });
+    return ApiService.request(`${SAFETY_REQUEST_URL}`, {}, 'Failed to fetch requests');
   }
 
   // Get requests by coverage type
   static getRequestsByCoverage(coverage) {
-    return fetch(`${SAFETY_REQUEST_URL}/coverage/${coverage}`)
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch requests');
-        return response.json();
-      });
+    return ApiService.request(`${SAFETY_REQUEST_URL}/coverage/${coverage}`, {}, 'Failed to fetch requests');
   }
 
   // Get requests by personnel number
   static getRequestsByPersonnelNumber(personnelNumber) {
-    return fetch(`${SAFETY_REQUEST_URL}/personnel/${personnelNumber}`)
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch requests');
-        return response.json();
-      });
+    return ApiService.request(`${SAFETY_REQUEST_URL}/personnel/${personnelNumber}`, {}, 'Failed to fetch requests');
   }
 
   // Delete request
   static deleteRequest(id) {
-    return fetch(`${SAFETY_REQUEST_URL}/${id}`, {
+    return ApiService.request(`${SAFETY_REQUEST_URL}/${id}`, {
       method: 'DELETE',
-    }).then(response => {
-      if (!response.ok) throw new Error('Failed to delete request');
-      return response.ok;
-    });
+    }, 'Failed to delete request');
   }
 }
 

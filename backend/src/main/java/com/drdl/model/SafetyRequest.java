@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.time.LocalTime;
 
 @Entity
 @Table(name = "SAFETY_REQUEST")
@@ -96,7 +95,7 @@ public class SafetyRequest {
     private LocalDate dateOfTest;
 
     @Column(name = "TEST_SCHEDULE_TIME")
-    private LocalTime testScheduleTime;
+    private String testScheduleTime;
 
     @Column(name = "WORK_CENTRE", length = 100)
     private String workCentre;
@@ -105,7 +104,7 @@ public class SafetyRequest {
     private String transportation;
 
     @Column(name = "TRANS_SCHEDULE_TIME")
-    private LocalTime transScheduleTime;
+    private String transScheduleTime;
 
     @Column(name = "TRANS_INCHARGE", length = 100)
     private String transIncharge;
