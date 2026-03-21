@@ -58,11 +58,22 @@ const formatValue = (key, value) => {
 };
 
 const getRequestStatus = (request) => {
-  if (request.headSfeedStatus === "APPROVED" && request.gdTsStatus === "APPROVED") {
+  const isSfeedApproved = request.headSfeedStatus === "APPROVED";
+  const isGdTsApproved = request.gdTsStatus === "APPROVED";
+
+  if (isSfeedApproved && isGdTsApproved) {
     return "Approved";
   }
 
-  return "Saved";
+  if (isSfeedApproved && !isGdTsApproved) {
+    return "Pending by GD-T&S";
+  }
+
+  if (!isSfeedApproved && isGdTsApproved) {
+    return "Pending by SFEED";
+  }
+
+  return "Saved - Pending Approval";
 };
 
 export default function ApprovalDashboard({ approver, roleCode, onLogout }) {

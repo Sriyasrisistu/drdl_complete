@@ -123,11 +123,22 @@ export default function RequestsTable({ personnelNumber, refresh, onRequestSelec
   };
 
   const getStatusDisplay = (request) => {
-    if (request.headSfeedStatus === "APPROVED" && request.gdTsStatus === "APPROVED") {
+    const isSfeedApproved = request.headSfeedStatus === "APPROVED";
+    const isGdTsApproved = request.gdTsStatus === "APPROVED";
+
+    if (isSfeedApproved && isGdTsApproved) {
       return { text: "Approved", className: "approved" };
     }
 
-    return { text: "Saved", className: "pending" };
+    if (isSfeedApproved && !isGdTsApproved) {
+      return { text: "Pending by GD-T&S", className: "pending" };
+    }
+
+    if (!isSfeedApproved && isGdTsApproved) {
+      return { text: "Pending by SFEED", className: "pending" };
+    }
+
+    return { text: "Saved - Pending Approval", className: "pending" };
   };
 
   if (!personnelNumber) {
