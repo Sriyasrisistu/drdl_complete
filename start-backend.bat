@@ -8,11 +8,11 @@ echo DRDL Fire Management System
 echo Backend Startup
 echo ========================================
 echo.
-echo Starting backend on http://localhost:8080
+echo Starting backend on http://localhost:8081
 echo Press Ctrl+C to stop the server
 echo.
 
 cd backend
-java -jar target/fire-management-system-1.0.0.jar
+mvn spring-boot:run
 
 pause
