@@ -1,679 +1,406 @@
 # DRDL Fire Management System
 
-A comprehensive Spring Boot + React application for managing safety fire requests across DRDL (Defence Research and Development Laboratory).
+Single implementation guide for setting up Oracle, configuring the app, and running the backend and frontend.
 
 ## Project Structure
 
-```
-drdl-mini/
-├── backend/              # Spring Boot REST API
-│   ├── src/main/java
-│   ├── src/test/java
-│   └── pom.xml
-├── frontend/             # React UI
-│   ├── src/components
-│   ├── src/services
-│   ├── src/styles
-│   └── package.json
-├── documentation/        # Project documentation
-└── README.md
-```
+- `backend/` Spring Boot API
+- `frontend/` React frontend
 
-## Tech Stack
+Runtime URLs:
 
-**Backend:**
-- Java 17
-- Spring Boot 3.1.5
-- Spring Data JPA
-- Hibernate
-- Oracle Database (primary)
-- Maven
-
-**Frontend:**
-- React 18.2
-- CSS3 (responsive design)
-- Jest & React Testing Library
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:8081`
 
 ## Prerequisites
 
-- **Java:** JDK 17 or higher
-- **Node.js:** v14 or higher with npm
-- **Maven:** v3.8 or higher
-- **Oracle Database:** Optional (if using Oracle profile)
+- Java 21
+- Maven 3.8+
+- Node.js 18+ and npm
+- Oracle Database XE or Oracle Database
+- Oracle SQL Developer or SQL*Plus
 
-## Quick Start
+## 1. Create Oracle User
 
-### 1. Clone & Navigate
+Connect as `SYSTEM`.
 
-```bash
-git clone https://github.com/Sriyasrisistu/min_drdl.git
-cd drdl-mini
-```
-
-### 2. Backend Setup & Run
-
-```bash
-cd backend
-
-# Install dependencies (Maven)
-mvn clean install
-
-# Run with Oracle (default)
-# Set environment variables first (PowerShell example):
-$env:ORACLE_URL='jdbc:oracle:thin:@//HOST:1521/ORCL'
-$env:ORACLE_USER='DRDL_USER'
-$env:ORACLE_PASSWORD='your_password'
-
-# Then run (Oracle profile will be used):
-mvn -Dspring-boot.run.profiles=oracle spring-boot:run
-```
-
-**Backend runs at:** http://localhost:8080  
-**Note:** The H2 console is not used. For local testing use the Oracle setup or run the backend against an Oracle instance.
-
-### 3. Frontend Setup & Run
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm start
-```
-
-**Frontend runs at:** http://localhost:3000
-
-### 4. Test the Integration
-
-Open http://localhost:3000 in your browser and:
-
-1. Select a **Type of Safety Coverage** (e.g., "INTEGRATION")
-2. Enter a **Personnel Number** (e.g., "123456")
-3. Fill in the coverage-specific fields
-4. Check the safety declaration
-5. Click **SEND TO HEAD, SFEED**
-
-Expected API call: `POST http://localhost:8080/api/v1/safety-requests`
-
-Verify in browser DevTools → Network tab.
-
-## Running Tests
-
-### Backend Tests
-
-```bash
-cd backend
-
-# Run all tests
-mvn test
-
-# Run with coverage
-mvn jacoco:report
-
-# View HTML coverage report
-# Open target/site/jacoco/index.html in browser
-```
-
-### Frontend Tests
-
-```bash
-cd frontend
-
-# Run tests in watch mode (press 'a' to run all)
-npm test
-
-# Run tests once with coverage
-npm run test:coverage
-
-# View coverage report
-# Open coverage/lcov-report/index.html in browser
-```
-
-## API Endpoints
-
-### Safety Requests
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/safety-requests` | Create new request |
-| GET | `/api/v1/safety-requests` | Get all requests |
-| GET | `/api/v1/safety-requests/{id}` | Get request by ID |
-| PUT | `/api/v1/safety-requests/{id}` | Update request |
-| DELETE | `/api/v1/safety-requests/{id}` | Delete request |
-| GET | `/api/v1/safety-requests/coverage/{coverage}` | Get by coverage type |
-
-### Request Body Example
-
-```json
-{
-  "personnelNumber": "123456",
-  "safetyCoverage": "integration",
-  "directorate": "DRDL",
-  "division": "Engineering",
-  "integrationFacility": "NGRAM",
-  "articleDetails": "Details of equipment",
-  "workDescription": "Description of work",
-  "activitySchedule": "available",
-  "ambulanceRequired": "required",
-  "testBed": "HTF",
-  "workCentre": "TSTC"
-}
-```
-
-## Configuration
-
-### Database (Oracle)
-
-This project uses **Oracle** as the primary database. The application includes an `application-oracle.properties` file under `backend/src/main/resources`.
-
-By default the app activates the `oracle` profile (see `application.properties`). To run locally, set these environment variables (PowerShell example):
-
-```powershell
-$env:ORACLE_URL='jdbc:oracle:thin:@//<HOST>:1521/<SERVICE>'
-$env:ORACLE_USER='DRDL_USER'
-$env:ORACLE_PASSWORD='your_password'
-```
-
-Start the backend with the Oracle profile (or rely on default profile):
-
-```bash
-mvn -Dspring-boot.run.profiles=oracle spring-boot:run
-```
-
-Database creation SQL is provided in `documentation/create_oracle_db.sql`. Below is the complete SQL used to create the schema and tables for this application (replace passwords and host/service values before running):
+Example:
 
 ```sql
--- Create user/schema (replace PASSWORD_PLACEHOLDER)
-CREATE USER DRDL_USER IDENTIFIED BY "PASSWORD_PLACEHOLDER";
-GRANT CREATE SESSION, CREATE TABLE, CREATE SEQUENCE, CREATE VIEW, CREATE PROCEDURE, CREATE TRIGGER TO DRDL_USER;
+sqlplus system/mini1912@//localhost:1521/XEPDB1
+```
+
+Create the application user:
+
+```sql
+CREATE USER DRDL_USER IDENTIFIED BY "mini1912";
+GRANT CREATE SESSION TO DRDL_USER;
+GRANT CREATE TABLE TO DRDL_USER;
+GRANT CREATE SEQUENCE TO DRDL_USER;
+GRANT CREATE VIEW TO DRDL_USER;
+GRANT CREATE PROCEDURE TO DRDL_USER;
+GRANT CREATE TRIGGER TO DRDL_USER;
 ALTER USER DRDL_USER QUOTA UNLIMITED ON USERS;
+```
 
--- EMPLOYEE_DETAILS
-CREATE TABLE DRDL_USER.EMPLOYEE_DETAILS (
-   EMP_ID NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY PRIMARY KEY,
-   EMPLOYEE_NAME VARCHAR2(100 CHAR) NOT NULL,
-   PERSONNEL_NO VARCHAR2(6 CHAR) NOT NULL UNIQUE,
-   DESIGNATION VARCHAR2(100 CHAR) NOT NULL,
-   DIRECTORATE VARCHAR2(100 CHAR),
-   DIVISION VARCHAR2(100 CHAR),
-   ADDRESS VARCHAR2(300 CHAR),
-   PHONE VARCHAR2(15 CHAR),
-   EMAIL VARCHAR2(100 CHAR),
-   PASSWORD VARCHAR2(255 CHAR),
-   STATUS VARCHAR2(20 CHAR)
+Reconnect as:
+
+```sql
+sqlplus DRDL_USER/mini1912@//localhost:1521/XEPDB1
+```
+
+## 2. Create Tables
+
+Run this as `DRDL_USER`.
+
+### Employee table
+
+```sql
+CREATE TABLE EMPLOYEE_DETAILS (
+  EMP_ID NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY PRIMARY KEY,
+  EMPLOYEE_NAME VARCHAR2(100 CHAR) NOT NULL,
+  PERSONNEL_NO VARCHAR2(6 CHAR) NOT NULL UNIQUE,
+  DESIGNATION VARCHAR2(100 CHAR) NOT NULL,
+  DIRECTORATE VARCHAR2(100 CHAR),
+  DIVISION VARCHAR2(100 CHAR),
+  ADDRESS VARCHAR2(300 CHAR),
+  PHONE VARCHAR2(15 CHAR),
+  EMAIL VARCHAR2(100 CHAR),
+  PASSWORD VARCHAR2(255 CHAR),
+  STATUS VARCHAR2(20 CHAR)
+);
+```
+
+### Safety request table
+
+```sql
+CREATE TABLE SAFETY_REQUEST (
+  REQUEST_ID NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY PRIMARY KEY,
+  UNIQUE_ID VARCHAR2(12 CHAR) UNIQUE,
+  PERS_NO VARCHAR2(6 CHAR) NOT NULL,
+  DATE_OF_REQUEST DATE,
+  SAFETY_COVERAGE VARCHAR2(50 CHAR) NOT NULL,
+  DIRECTORATE VARCHAR2(100 CHAR),
+  DIVISION VARCHAR2(100 CHAR),
+  INTEGRATION_FAC VARCHAR2(100 CHAR),
+  ARTICLE_DETAILS VARCHAR2(500 CHAR),
+  WORK_DESCRIPTION VARCHAR2(500 CHAR),
+  ACT_INCHARGE_NAME VARCHAR2(100 CHAR),
+  ACT_INCHARGE_ORG VARCHAR2(100 CHAR),
+  ACT_INCHARGE_PHONE VARCHAR2(15 CHAR),
+  DESIGNATION VARCHAR2(100 CHAR),
+  ACTIVITY_FROM_DATE DATE,
+  ACTIVITY_TO_DATE DATE,
+  ACTIVITY_SCHEDULE VARCHAR2(3 CHAR),
+  ACTIVITY_PDF BLOB,
+  AMBULANCE_REQUIRED VARCHAR2(3 CHAR),
+  OTHER_DETAILS VARCHAR2(500 CHAR),
+  TEST_BED VARCHAR2(100 CHAR),
+  TARB_CLEARANCE VARCHAR2(100 CHAR),
+  REFERENCE_NO VARCHAR2(100 CHAR),
+  TEST_CTRL_NAME VARCHAR2(100 CHAR),
+  TEST_CTRL_DESIG VARCHAR2(100 CHAR),
+  DATE_OF_TEST DATE,
+  TEST_SCHEDULE_TIME VARCHAR2(8 CHAR),
+  WORK_CENTRE VARCHAR2(100 CHAR),
+  TRANSPORTATION VARCHAR2(100 CHAR),
+  TRANS_SCHEDULE_TIME VARCHAR2(8 CHAR),
+  TRANS_INCHARGE VARCHAR2(100 CHAR),
+  VEHICLE_DETAILS VARCHAR2(100 CHAR),
+  DRIVER_NAME VARCHAR2(100 CHAR),
+  DRIVER_DESIG VARCHAR2(100 CHAR),
+  DRIVER_AUTH VARCHAR2(3 CHAR),
+  HEAD_SFEED_STATUS VARCHAR2(20 CHAR),
+  WORK_ALLOCATED_TO VARCHAR2(100 CHAR),
+  GD_TS_STATUS VARCHAR2(20 CHAR)
+);
+```
+
+### Approver table
+
+```sql
+CREATE TABLE APPROVER_USERS (
+  APPROVER_ID NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY PRIMARY KEY,
+  LOGIN_ID VARCHAR2(50 CHAR) NOT NULL UNIQUE,
+  PASSWORD VARCHAR2(255 CHAR) NOT NULL,
+  APPROVER_NAME VARCHAR2(100 CHAR) NOT NULL,
+  DESIGNATION VARCHAR2(100 CHAR),
+  ROLE_CODE VARCHAR2(20 CHAR) NOT NULL,
+  STATUS VARCHAR2(20 CHAR) NOT NULL
+);
+```
+
+## 3. Create Indexes
+
+```sql
+CREATE INDEX IDX_SAFETY_PERSNO ON SAFETY_REQUEST (PERS_NO);
+CREATE INDEX IDX_EMP_PERSONNEL_NO ON EMPLOYEE_DETAILS (PERSONNEL_NO);
+CREATE INDEX IDX_APPROVER_LOGIN_ID ON APPROVER_USERS (LOGIN_ID);
+```
+
+## 4. Insert Initial Data
+
+### Employee rows
+
+```sql
+INSERT INTO EMPLOYEE_DETAILS (
+  EMPLOYEE_NAME, PERSONNEL_NO, DESIGNATION, DIRECTORATE, DIVISION,
+  ADDRESS, PHONE, EMAIL, PASSWORD, STATUS
+) VALUES (
+  'Rajeev Kumar', '001234', 'Senior Engineer', 'SFEED', 'Engineering',
+  'DRDL Campus', '1234567890', 'rajeev@drdl.gov.in', 'pass123', 'ACTIVE'
 );
 
--- SAFETY_REQUEST
-CREATE TABLE DRDL_USER.SAFETY_REQUEST (
-   REQUEST_ID NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY PRIMARY KEY,
-   UNIQUE_ID VARCHAR2(12 CHAR) UNIQUE,
-   PERS_NO VARCHAR2(6 CHAR) NOT NULL,
-   DATE_OF_REQUEST DATE,
-   SAFETY_COVERAGE VARCHAR2(50 CHAR) NOT NULL,
-   DIRECTORATE VARCHAR2(100 CHAR),
-   DIVISION VARCHAR2(100 CHAR),
-   INTEGRATION_FAC VARCHAR2(100 CHAR),
-   ARTICLE_DETAILS VARCHAR2(500 CHAR),
-   WORK_DESCRIPTION VARCHAR2(500 CHAR),
-   ACT_INCHARGE_NAME VARCHAR2(100 CHAR),
-   ACT_INCHARGE_ORG VARCHAR2(100 CHAR),
-   ACT_INCHARGE_PHONE VARCHAR2(15 CHAR),
-   DESIGNATION VARCHAR2(100 CHAR),
-   ACTIVITY_FROM_DATE DATE,
-   ACTIVITY_TO_DATE DATE,
-   ACTIVITY_SCHEDULE VARCHAR2(3 CHAR),
-   ACTIVITY_PDF BLOB,
-   AMBULANCE_REQUIRED VARCHAR2(3 CHAR),
-   OTHER_DETAILS VARCHAR2(500 CHAR),
-   TEST_BED VARCHAR2(100 CHAR),
-   TARB_CLEARANCE VARCHAR2(100 CHAR),
-   REFERENCE_NO VARCHAR2(100 CHAR),
-   TEST_CTRL_NAME VARCHAR2(100 CHAR),
-   TEST_CTRL_DESIG VARCHAR2(100 CHAR),
-   DATE_OF_TEST DATE,
-   TEST_SCHEDULE_TIME VARCHAR2(8 CHAR),
-   WORK_CENTRE VARCHAR2(100 CHAR),
-   TRANSPORTATION VARCHAR2(100 CHAR),
-   TRANS_SCHEDULE_TIME VARCHAR2(8 CHAR),
-   TRANS_INCHARGE VARCHAR2(100 CHAR),
-   VEHICLE_DETAILS VARCHAR2(100 CHAR),
-   DRIVER_NAME VARCHAR2(100 CHAR),
-   DRIVER_DESIG VARCHAR2(100 CHAR),
-   DRIVER_AUTH VARCHAR2(3 CHAR),
-   HEAD_SFEED_STATUS VARCHAR2(20 CHAR),
-   WORK_ALLOCATED_TO VARCHAR2(100 CHAR),
-   GD_TS_STATUS VARCHAR2(20 CHAR)
+INSERT INTO EMPLOYEE_DETAILS (
+  EMPLOYEE_NAME, PERSONNEL_NO, DESIGNATION, DIRECTORATE, DIVISION,
+  ADDRESS, PHONE, EMAIL, PASSWORD, STATUS
+) VALUES (
+  'Dr. Rajesh Kumar', '001235', 'Senior Scientist', 'Aeronautics', 'Flight Mechanics',
+  'DRDL Campus', '0401234567', 'rajesh.kumar@drdl.gov.in', 'pass123', 'ACTIVE'
 );
 
-CREATE INDEX IDX_SAFETY_PERSNO ON DRDL_USER.SAFETY_REQUEST (PERS_NO);
-CREATE INDEX IDX_EMP_PERSONNEL_NO ON DRDL_USER.EMPLOYEE_DETAILS (PERSONNEL_NO);
+INSERT INTO EMPLOYEE_DETAILS (
+  EMPLOYEE_NAME, PERSONNEL_NO, DESIGNATION, DIRECTORATE, DIVISION,
+  ADDRESS, PHONE, EMAIL, PASSWORD, STATUS
+) VALUES (
+  'Ms. Priya Sharma', '001236', 'Scientist', 'Systems & Analysis', 'Control Systems',
+  'DRDL Campus', '0401234568', 'priya.sharma@drdl.gov.in', 'pass123', 'ACTIVE'
+);
+
+INSERT INTO EMPLOYEE_DETAILS (
+  EMPLOYEE_NAME, PERSONNEL_NO, DESIGNATION, DIRECTORATE, DIVISION,
+  ADDRESS, PHONE, EMAIL, PASSWORD, STATUS
+) VALUES (
+  'Shri Vikram Singh', '001237', 'Senior Technical Officer', 'Structures', 'Materials',
+  'DRDL Campus', '0401234569', 'vikram.singh@drdl.gov.in', 'pass123', 'ACTIVE'
+);
+
+INSERT INTO EMPLOYEE_DETAILS (
+  EMPLOYEE_NAME, PERSONNEL_NO, DESIGNATION, DIRECTORATE, DIVISION,
+  ADDRESS, PHONE, EMAIL, PASSWORD, STATUS
+) VALUES (
+  'Dr. Anita Verma', '001238', 'Principal Scientist', 'Propulsion', 'Engine Integration',
+  'DRDL Campus', '0401234570', 'anita.verma@drdl.gov.in', 'pass123', 'ACTIVE'
+);
+
+INSERT INTO EMPLOYEE_DETAILS (
+  EMPLOYEE_NAME, PERSONNEL_NO, DESIGNATION, DIRECTORATE, DIVISION,
+  ADDRESS, PHONE, EMAIL, PASSWORD, STATUS
+) VALUES (
+  'Mr. Arun Patel', '001239', 'Technical Officer', 'Systems & Analysis', 'Avionics',
+  'DRDL Campus', '0401234571', 'arun.patel@drdl.gov.in', 'pass123', 'ACTIVE'
+);
 ```
 
-See `documentation/create_oracle_db.sql` for a copy you can run directly (with placeholders to replace).
+### Approver rows
 
-## Frontend Coverage Types
+```sql
+INSERT INTO APPROVER_USERS (
+  LOGIN_ID, PASSWORD, APPROVER_NAME, DESIGNATION, ROLE_CODE, STATUS
+) VALUES (
+  'sfeed01', 'pass123', 'Head, SFEED', 'Supervisor', 'SFEED', 'ACTIVE'
+);
 
-1. **INTEGRATION** - Integration facility testing (NGRAM, QRSAM, ASTRA, etc.)
-2. **STATIC TEST** - Static testing on various test beds
-3. **THERMOSTRUCTURAL** - Thermal testing (TSTC)
-4. **PRESSURE TEST** - Pressure testing (ASTC, SSTC)
-5. **GRT** - Gas Recirculation Testing
-6. **ALIGNMENT INSPECTION** - Alignment checks (AIC-I, AIC-II)
-7. **RADIOGRAPHY** - Radiographic inspection (LARC, NDED)
-8. **HYDROBASIN** - Hydrobasin testing
-9. **TRANSPORTATION** - Equipment transportation safety
-10. **OTHER** - Custom safety coverage type
-
-## Error Handling
-
-- API errors are caught and displayed as red error messages on the form
-- Frontend validation prevents submission without required fields
-- Backend logs are available in console during development
-
-## Common Issues & Solutions
-
-### Port 8080 Already in Use
-```bash
-# Kill process on port 8080 (Windows PowerShell)
-Get-Process -Id (Get-NetTCPConnection -LocalPort 8080).OwningProcess | Stop-Process
-
-# Or use a different port:
-mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=9090"
+INSERT INTO APPROVER_USERS (
+  LOGIN_ID, PASSWORD, APPROVER_NAME, DESIGNATION, ROLE_CODE, STATUS
+) VALUES (
+  'gdts01', 'pass123', 'Head, GD-T&S', 'Supervisor', 'GDTS', 'ACTIVE'
+);
 ```
 
-### Port 3000 Already in Use
-```bash
-# React will prompt to use a different port, or set manually:
-PORT=3001 npm start
+Commit:
+
+```sql
+COMMIT;
 ```
 
-### CORS Errors
-Frontend and backend CORS is configured in:
-- **Backend:** `SafetyRequestController.java` (@CrossOrigin annotation)
-- **Frontend API URL:** `frontend/src/services/apiService.js`
+## 5. Verify Oracle Data
 
-Ensure both are pointing to the correct URLs.
+```sql
+SELECT PERSONNEL_NO, EMPLOYEE_NAME, STATUS
+FROM EMPLOYEE_DETAILS
+ORDER BY PERSONNEL_NO;
 
-### Oracle Connection Fails
-1. Verify Oracle credentials are correct
-2. Check firewall/network access to Oracle host
-3. Verify ORACLE_URL format: `jdbc:oracle:thin:@//hostname:port/servicename`
-4. Ensure `ojdbc11` library is in classpath (Maven dependency)
+SELECT LOGIN_ID, APPROVER_NAME, ROLE_CODE, STATUS
+FROM APPROVER_USERS
+ORDER BY APPROVER_ID;
 
-## Build & Deploy
+SELECT REQUEST_ID, UNIQUE_ID, PERS_NO, DATE_OF_REQUEST, HEAD_SFEED_STATUS, GD_TS_STATUS
+FROM SAFETY_REQUEST
+ORDER BY REQUEST_ID DESC;
+```
 
-### Build Backend JAR
-```bash
+## 6. Configure Backend Properties
+
+Edit these files:
+
+- `backend/src/main/resources/application.properties`
+- `backend/src/main/resources/application-oracle.properties`
+
+Recommended values:
+
+### `application.properties`
+
+```properties
+spring.application.name=DRDL-Fire-Management-System
+spring.profiles.active=oracle
+
+server.port=8081
+server.servlet.encoding.charset=UTF-8
+server.servlet.encoding.enabled=true
+server.servlet.encoding.force=true
+
+logging.level.root=WARN
+logging.level.com.drdl=INFO
+logging.level.org.springframework.web=INFO
+
+app.cors.allowed-origins=${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+
+spring.datasource.url=jdbc:oracle:thin:@localhost:1521:XEPDB1
+spring.datasource.username=DRDL_USER
+spring.datasource.password=mini1912
+spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+
+spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.show-sql=true
+```
+
+### `application-oracle.properties`
+
+```properties
+spring.datasource.url=${ORACLE_URL:jdbc:oracle:thin:@//localhost:1521/XEPDB1}
+spring.datasource.username=${ORACLE_USER:DRDL_USER}
+spring.datasource.password=${ORACLE_PASSWORD:mini1912}
+spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.use_sql_comments=true
+spring.jpa.properties.hibernate.jdbc.batch_size=20
+spring.jpa.properties.hibernate.order_inserts=true
+spring.jpa.properties.hibernate.order_updates=true
+
+spring.datasource.hikari.maximum-pool-size=10
+spring.datasource.hikari.minimum-idle=2
+```
+
+Optional environment variables:
+
+```powershell
+$env:ORACLE_URL='jdbc:oracle:thin:@//localhost:1521/XEPDB1'
+$env:ORACLE_USER='DRDL_USER'
+$env:ORACLE_PASSWORD='mini1912'
+```
+
+## 7. Run Backend
+
+From the project root:
+
+```powershell
 cd backend
-mvn clean package
-# Output: target/fire-management-system-1.0.0.jar
+mvn spring-boot:run
 ```
 
-### Build Frontend Dist
-```bash
-cd frontend
-npm run build
-# Output: build/ directory (ready for static hosting)
+Or run the built jar:
+
+```powershell
+cd backend
+java -jar target\fire-management-system-1.0.0.jar
 ```
 
-## Docker Support (Optional)
+Backend URL:
 
-Create a `Dockerfile` in the backend root:
-```dockerfile
-FROM openjdk:17-slim
-COPY target/fire-management-system-1.0.0.jar /app.jar
-ENTRYPOINT ["java", "-jar", "/app.jar"]
-EXPOSE 8080
+```text
+http://localhost:8081
 ```
 
-Build and run:
-```bash
-docker build -t drdl-backend:latest .
-docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=oracle drdl-backend:latest
+Test backend:
+
+```powershell
+Invoke-WebRequest -UseBasicParsing http://localhost:8081/api/v1/employees
 ```
 
-## Documentation
+## 8. Run Frontend
 
-- [API Documentation](./documentation/API_DOCUMENTATION.md)
-- [Setup Guide](./documentation/SETUP_GUIDE.md)
+In a new terminal:
 
-## Git Workflow
-
-```bash
-# Stage changes
-git add -A
-
-# Commit
-git commit -m "Add feature or fix: describe changes"
-
-# Push to main branch
-git push origin main
-```
-
-## Contact & Support
-
-For issues or questions, create an issue in the GitHub repository:  
-https://github.com/Sriyasrisistu/min_drdl/issues
-
-## License
-
-Proprietary - DRDL
-
-
-**Frontend:**
-```bash
+```powershell
 cd frontend
 npm install
 npm start
 ```
 
-Backend runs on: `http://localhost:8080`
-Frontend runs on: `http://localhost:3000`
+Frontend URL:
 
----
-
-##  Features
-
-### Safety Coverage Types
-- **INTEGRATION** - Integration facility tests
-- **STATIC TEST** - Static test bed evaluations
-- **THERMOSTRUCTURAL** - Thermal and structural analysis
-- **PRESSURE TEST** - Pressure testing operations
-- **GRT** - General Research Tests
-- **ALIGNMENT INSPECTION** - Alignment verification
-- **RADIOGRAPHY** - Radiographic testing
-- **HYDROBASIN** - Water basin operations
-- **TRANSPORTATION** - Material transportation
-- **ANY OTHER** - Custom safety coverage
-
-### Key Functionalities
- Create and manage safety requests
- TARB clearance tracking
- Activity scheduling and monitoring
- Ambulance requirement management
- Test controller assignment
- Approval workflow (Head SFEED → GD-TS)
- Transportation management
- Driver authorization tracking
- Request history and reporting
-
----
-
-##  Architecture
-
-### Tech Stack
-
-**Backend:**
-- Spring Boot 3.1.5
-- Spring Data JPA
-- Oracle JDBC Driver
-- Lombok (Data annotation library)
-- Maven
-
-**Frontend:**
-- React 18.2.0
-- Vanilla JavaScript (ES6+)
-- CSS3 with responsive design
-- Fetch API for HTTP requests
-
-**Database:**
-- Oracle 11g/12c
-- 33 columns for comprehensive data capture
-
----
-
-##  Project Structure
-
-```
-drdl-fire-management/
-├── backend/                          # Spring Boot Application
-│   ├── src/main/java/com/drdl/
-│   │   ├── DrdlApplication.java
-│   │   ├── controller/
-│   │   │   └── SafetyRequestController.java
-│   │   ├── service/
-│   │   │   └── SafetyRequestService.java
-│   │   ├── repository/
-│   │   │   └── SafetyRequestRepository.java
-│   │   ├── model/
-│   │   │   └── SafetyRequest.java
-│   │   ├── dto/
-│   │   │   └── SafetyRequestDTO.java
-│   │   └── config/
-│   │       └── CorsConfig.java
-│   ├── src/main/resources/
-│   │   └── application.properties
-│   └── pom.xml
-│
-├── frontend/                         # React Application
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── SafetyFireRequestForm.jsx
-│   │   │   ├── IntegrationSection.jsx
-│   │   │   ├── StaticTestSection.jsx
-│   │   │   └── TransportationSection.jsx
-│   │   ├── services/
-│   │   │   └── apiService.js
-│   │   ├── styles/
-│   │   │   └── SafetyFireRequestForm.css
-│   │   ├── App.jsx
-│   │   └── index.js
-│   ├── package.json
-│   └── README.md
-│
-└── documentation/
-    ├── API_DOCUMENTATION.md
-    ├── SETUP_GUIDE.md
-    └── README.md (this file)
+```text
+http://localhost:3000
 ```
 
----
+## 9. Login Credentials
 
-## API Endpoints
+Employee login:
 
-All endpoints are prefixed with `/api/v1`
+- Personnel No: `001234`
+- Password: `pass123`
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/safety-requests` | Create new request |
-| GET | `/safety-requests` | Get all requests |
-| GET | `/safety-requests/{id}` | Get single request |
-| PUT | `/safety-requests/{id}` | Update request |
-| GET | `/safety-requests/coverage/{coverage}` | Filter by coverage type |
-| DELETE | `/safety-requests/{id}` | Delete request |
+Approver logins:
 
----
+- SFEED: `sfeed01 / pass123`
+- GD-T&S: `gdts01 / pass123`
 
-##  Database Schema
+## 10. Basic Flow
 
-The `SAFETY_REQUEST` table contains 33 columns capturing:
-- Personnel and organizational details
-- Safety coverage type and specifics
-- Activity scheduling and dates
-- Test bed/center information
-- TARB clearance status
-- Ambulance requirements
-- Approval workflow status
-- Transportation and driver details
+1. Login as employee.
+2. Create and save a request.
+3. Login as approvers and approve.
+4. Employee sees status updates:
+   - `Saved - Pending Approval`
+   - `Pending by SFEED`
+   - `Pending by GD-T&S`
+   - `Approved`
 
-See `documentation/SETUP_GUIDE.md` for full schema.
+## 11. Useful Oracle Queries
 
----
+All requests:
 
-##  CORS Configuration
-
-**Allowed Origins:** `http://localhost:3000`
-**Methods:** GET, POST, PUT, DELETE, OPTIONS
-**Max Age:** 3600 seconds
-
----
-
-##  Documentation
-
-- **Setup Guide:** `documentation/SETUP_GUIDE.md`
-- **API Documentation:** `documentation/API_DOCUMENTATION.md`
-- **Database Schema:** See SETUP_GUIDE.md
-
----
-
-##  Development Workflow
-
-1. **Backend Development**
-   - Create Spring Boot application
-   - Define entities and DTOs
-   - Implement business logic in services
-   - Create REST endpoints
-   - Configure CORS
-
-2. **Frontend Development**
-   - Create React components
-   - Integrate with API service
-   - Add form validation
-   - Style with CSS
-   - Test with backend
-
-3. **Integration**
-   - Ensure both services run simultaneously
-   - Test API endpoints from frontend
-   - Verify CORS configuration
-   - Handle errors gracefully
-
----
-
-##  Configuration
-
-### Backend (application.properties)
-```properties
-spring.datasource.url=jdbc:oracle:thin:@localhost:1521:ORCL
-spring.datasource.username=DRDL_USER
-spring.datasource.password=your_password
-spring.jpa.database-platform=org.hibernate.dialect.Oracle10gDialect
-server.port=8080
+```sql
+SELECT *
+FROM SAFETY_REQUEST
+ORDER BY REQUEST_ID DESC;
 ```
 
-### Frontend (apiService.js)
-```javascript
-const API_BASE_URL = 'http://localhost:8080/api/v1/safety-requests';
+Request statuses:
+
+```sql
+SELECT
+  REQUEST_ID,
+  UNIQUE_ID,
+  PERS_NO,
+  DATE_OF_REQUEST,
+  HEAD_SFEED_STATUS,
+  GD_TS_STATUS
+FROM SAFETY_REQUEST
+ORDER BY REQUEST_ID DESC;
 ```
 
----
+Approver logins:
 
-##  Testing
-
-### Backend
-```bash
-cd backend
-mvn test
+```sql
+SELECT
+  APPROVER_ID,
+  LOGIN_ID,
+  APPROVER_NAME,
+  ROLE_CODE,
+  STATUS
+FROM APPROVER_USERS
+ORDER BY APPROVER_ID;
 ```
 
-### Frontend
-```bash
-cd frontend
-npm test
-```
+## 12. Notes
 
----
-
-##  Building for Production
-
-### Backend
-```bash
-cd backend
-mvn clean package -DskipTests
-# Creates: target/fire-management-system-1.0.0.jar
-```
-
-### Frontend
-```bash
-cd frontend
-npm run build
-# Creates: build/ folder with optimized files
-```
-
----
-
-##  Troubleshooting
-
-### Database Connection Error
-- Verify Oracle is running
-- Check credentials in `application.properties`
-- Test connection: `sqlplus DRDL_USER/password@ORCL`
-
-### Port Already in Use
-- Backend: Change `server.port` in `application.properties`
-- Frontend: Set `PORT` environment variable
-
-### CORS Errors
-- Ensure backend CORS config matches frontend URL
-- Backend must be running before frontend makes requests
-
-### Maven Build Fails
-```bash
-mvn clean
-rm -rf ~/.m2/repository
-mvn install
-```
-
----
-
-##  Code Standards
-
-### Backend (Java)
-- Follow Spring Framework conventions
-- Use DTOs for API contracts
-- Implement business logic in services
-- Add appropriate annotations (@Entity, @Service, etc.)
-
-### Frontend (React)
-- Use functional components with hooks
-- Separate concerns into multiple components
-- Handle errors with user-friendly messages
-- Use CSS classes for styling
-
----
-
-##  Continuous Integration
-
-Recommended CI/CD tools:
-- **GitHub Actions** for automated tests
-- **Docker** for containerization
-- **Kubernetes** for orchestration
-
----
-
-
-##  License
-
-Internal DRDL Project - Confidential
-
----
-
-##  Team
-
-**Developed by:** DRDL Development Team
-**Last Updated:** November 2024
-**Version:** 1.0.0
-
----
-
-##  Future Enhancements
-
-- [ ] User authentication & authorization
-- [ ] Email notifications
-- [ ] Advanced reporting & analytics
-- [ ] Mobile application
-- [ ] Document upload & storage
-- [ ] Real-time notifications
-- [ ] Multi-language support
-- [ ] Dark mode UI
-
----
-
-##  Contact
-
-**Email:** sistusriyasri@gmail.com
-
----
+- Oracle tables must exist before backend startup because `ddl-auto=none`.
+- Frontend should point to backend port `8081`.
+- If login fails, first verify backend is running on `8081`.

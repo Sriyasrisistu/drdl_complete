@@ -21,6 +21,7 @@ backend/.vscode/
 backend/*.class
 backend/*.jar
 backend/*.log
+logs/
 backend/.DS_Store
 backend/.idea/
 
