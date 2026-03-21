@@ -1,6 +1,8 @@
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
-const SAFETY_REQUEST_URL = `${API_BASE_URL}/api/v1/safety-requests`;
-const EMPLOYEE_URL = `${API_BASE_URL}/api/v1/employees`;
+const rawApiBaseUrl = process.env.REACT_APP_API_BASE_URL || '';
+const API_BASE_URL = rawApiBaseUrl.replace(/\/$/, '');
+const API_PREFIX = API_BASE_URL.endsWith('/api/v1') ? '' : '/api/v1';
+const SAFETY_REQUEST_URL = `${API_BASE_URL}${API_PREFIX}/safety-requests`;
+const EMPLOYEE_URL = `${API_BASE_URL}${API_PREFIX}/employees`;
 
 class ApiService {
   static async request(url, options = {}, defaultErrorMessage = 'Request failed') {
