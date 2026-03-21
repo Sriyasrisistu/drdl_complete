@@ -19,6 +19,8 @@ public class SafetyRequestService {
     public SafetyRequestDTO createRequest(SafetyRequestDTO dto) {
         SafetyRequest request = mapDtoToEntity(dto);
         request.setDateOfRequest(LocalDate.now());
+        request.setHeadSfeedStatus("SAVED");
+        request.setGdTsStatus("SAVED");
         
         // Generate unique ID
         String uniqueId = generateUniqueId(dto.getPersonnelNumber());
@@ -34,14 +36,24 @@ public class SafetyRequestService {
         
         // Get all requests created today
         List<SafetyRequest> todayRequests = repository.findByDateOfRequestBetween(today, today);
-        
-        // Count requests for this personnel number today
-        long countForToday = todayRequests.stream()
-            .filter(r -> r.getPersonnelNumber().equals(personnelNumber))
-            .count();
-        
-        // Format: YYYYMMDD00 (where 00 increments based on request count)
-        String suffix = String.format("%02d", countForToday + 1);
+
+        // Use the highest existing numeric suffix for today so IDs remain unique
+        // even when requests are deleted or created by multiple users.
+        int nextSequence = todayRequests.stream()
+            .map(SafetyRequest::getUniqueId)
+            .filter(uniqueId -> uniqueId != null && uniqueId.startsWith(datePrefix) && uniqueId.length() > datePrefix.length())
+            .map(uniqueId -> uniqueId.substring(datePrefix.length()))
+            .mapToInt(suffix -> {
+                try {
+                    return Integer.parseInt(suffix);
+                } catch (NumberFormatException ex) {
+                    return 0;
+                }
+            })
+            .max()
+            .orElse(0) + 1;
+
+        String suffix = String.format("%02d", nextSequence);
         return datePrefix + suffix;
     }
 
@@ -61,7 +73,7 @@ public class SafetyRequestService {
     }
 
     public List<SafetyRequestDTO> getAllRequests() {
-        return repository.findAll().stream()
+        return repository.findAllByOrderByDateOfRequestDescRequestIdDesc().stream()
             .map(this::mapEntityToDto)
             .collect(Collectors.toList());
     }
@@ -81,6 +93,49 @@ public class SafetyRequestService {
 
     public void deleteRequest(Long id) {
         repository.deleteById(id);
+    }
+
+    public SafetyRequestDTO submitRequest(Long id) {
+        SafetyRequest request = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        request.setHeadSfeedStatus("SAVED");
+        request.setGdTsStatus("SAVED");
+
+        SafetyRequest updated = repository.save(request);
+        return mapEntityToDto(updated);
+    }
+
+    public SafetyRequestDTO approveBySfeed(Long id) {
+        SafetyRequest request = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        request.setHeadSfeedStatus("APPROVED");
+
+        SafetyRequest updated = repository.save(request);
+        return mapEntityToDto(updated);
+    }
+
+    public SafetyRequestDTO approveByGdTs(Long id) {
+        SafetyRequest request = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        request.setGdTsStatus("APPROVED");
+
+        SafetyRequest updated = repository.save(request);
+        return mapEntityToDto(updated);
+    }
+
+    public List<SafetyRequestDTO> getRequestsForSfeedApproval() {
+        return repository.findAllByOrderByDateOfRequestDescRequestIdDesc().stream()
+            .map(this::mapEntityToDto)
+            .collect(Collectors.toList());
+    }
+
+    public List<SafetyRequestDTO> getRequestsForGdTsApproval() {
+        return repository.findAllByOrderByDateOfRequestDescRequestIdDesc().stream()
+            .map(this::mapEntityToDto)
+            .collect(Collectors.toList());
     }
 
     private SafetyRequest mapDtoToEntity(SafetyRequestDTO dto) {

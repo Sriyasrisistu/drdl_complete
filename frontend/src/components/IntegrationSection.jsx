@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 
 export default function IntegrationSection({ formData, handleInputChange, employees = [] }) {
   const [integrationFacility, setIntegrationFacility] = useState("");
@@ -16,6 +16,72 @@ export default function IntegrationSection({ formData, handleInputChange, employ
   };
 
   const todayDate = useMemo(() => getTodayDate(), []);
+
+  useEffect(() => {
+    setIntegrationFacility(formData.integrationFacility || "");
+    setActivitySchedule(formData.activitySchedule || "");
+    setAmbulance(formData.ambulanceRequired || "");
+    setFromDate(formData.activityFromDate || "");
+    setToDate(formData.activityToDate || "");
+
+    if (formData.incharge === "DRDL") {
+      setActivityIncharge("DRDL");
+      return;
+    }
+
+    if (formData.incharge === "Other") {
+      setActivityIncharge("Other");
+      setSelectedAddress("");
+      return;
+    }
+
+    const matchingEmployee = employees.find(
+      (emp) =>
+        emp.employeeName === formData.activityInchargeName ||
+        (
+          String(emp.phone || "") === String(formData.activityInchargePhone || "") &&
+          emp.designation === formData.designation
+        )
+    );
+
+    if (matchingEmployee) {
+      setActivityIncharge("DRDL");
+      setSelectedAddress(String(matchingEmployee.empId));
+      return;
+    }
+
+    if (
+      formData.activityInchargeName ||
+      formData.activityInchargeOrg ||
+      formData.activityInchargePhone ||
+      formData.designation
+    ) {
+      setActivityIncharge("Other");
+      return;
+    }
+
+    setActivityIncharge("");
+    setSelectedAddress("");
+  }, [formData, employees]);
+
+  const handleInchargeTypeChange = (value) => {
+    setActivityIncharge(value);
+    setSelectedAddress("");
+    if (handleInputChange) {
+      handleInputChange({ target: { name: "incharge", value } });
+      handleInputChange({ target: { name: "activityInchargeName", value: "" } });
+      handleInputChange({ target: { name: "activityInchargeOrg", value: "" } });
+      handleInputChange({ target: { name: "activityInchargePhone", value: "" } });
+      handleInputChange({ target: { name: "designation", value: "" } });
+    }
+  };
+
+  const handleOtherPhoneChange = (e) => {
+    const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
+    if (handleInputChange) {
+      handleInputChange({ target: { name: "activityInchargePhone", value: digitsOnly } });
+    }
+  };
 
   const handleFromDateChange = (e) => {
     const date = e.target.value;
@@ -48,6 +114,7 @@ export default function IntegrationSection({ formData, handleInputChange, employ
 
       <label className="form-label">Integration Facility *</label>
       <select
+        name="integrationFacility"
         className="form-select"
         value={integrationFacility}
         onChange={(e) => setIntegrationFacility(e.target.value)}
@@ -61,6 +128,7 @@ export default function IntegrationSection({ formData, handleInputChange, employ
       </select>
       {integrationFacility === "other" && (
         <input
+          name="integrationFacility"
           type="text"
           placeholder="Specify Facility"
           className="form-input placeholder-box"
@@ -70,6 +138,7 @@ export default function IntegrationSection({ formData, handleInputChange, employ
 
       <label className="form-label">Details of Article *</label>
       <textarea
+        name="articleDetails"
         className="form-input"
         placeholder="Enter details"
         required
@@ -77,6 +146,7 @@ export default function IntegrationSection({ formData, handleInputChange, employ
 
       <label className="form-label">Description of Work *</label>
       <textarea
+        name="workDescription"
         className="form-input"
         placeholder="Enter description"
         required
@@ -89,7 +159,9 @@ export default function IntegrationSection({ formData, handleInputChange, employ
             type="radio"
             name="incharge"
             value="DRDL"
-            onChange={(e) => setActivityIncharge(e.target.value)}
+            checked={activityIncharge === "DRDL"}
+            onChange={(e) => handleInchargeTypeChange(e.target.value)}
+            required
           />
           DRDL
         </label>
@@ -98,7 +170,9 @@ export default function IntegrationSection({ formData, handleInputChange, employ
             type="radio"
             name="incharge"
             value="Other"
-            onChange={(e) => setActivityIncharge(e.target.value)}
+            checked={activityIncharge === "Other"}
+            onChange={(e) => handleInchargeTypeChange(e.target.value)}
+            required
           />
           Other
         </label>
@@ -106,19 +180,31 @@ export default function IntegrationSection({ formData, handleInputChange, employ
       {activityIncharge === "Other" && (
         <div className="other-incharge-form">
           <label className="form-label">Name *</label>
-          <input type="text" className="form-input" placeholder="Enter Name" />
+          <input type="text" name="activityInchargeName" className="form-input" placeholder="Enter Name" required />
           <label className="form-label">Designation *</label>
-          <input type="text" className="form-input" placeholder="Enter Designation" />
+          <input type="text" name="designation" className="form-input" placeholder="Enter Designation" required />
           <label className="form-label">Organisation *</label>
-          <input type="text" className="form-input" placeholder="Enter Organisation" />
+          <input type="text" name="activityInchargeOrg" className="form-input" placeholder="Enter Organisation" required />
           <label className="form-label">Phone No. *</label>
-          <input type="text" className="form-input" placeholder="Enter Phone Number" />
+          <input
+            type="tel"
+            name="activityInchargePhone"
+            className="form-input"
+            placeholder="Enter 10-digit Phone Number"
+            inputMode="numeric"
+            pattern="[0-9]{10}"
+            maxLength={10}
+            value={formData.activityInchargePhone || ""}
+            onChange={handleOtherPhoneChange}
+            required
+          />
         </div>
       )}
       {/* Show employee dropdown when DRDL is selected as Activity In-Charge */}
       {activityIncharge === "DRDL" && (
         <div className="form-section" style={{ marginTop: 12 }}>
           <select
+            name="drdlActivityIncharge"
             className="form-select"
             value={selectedAddress}
             onChange={(e) => {
@@ -132,6 +218,7 @@ export default function IntegrationSection({ formData, handleInputChange, employ
                 handleInputChange({ target: { name: 'designation', value: emp.designation } });
               }
             }}
+            required={activityIncharge === "DRDL"}
           >
             <option value="">-- Select Activity Incharge --</option>
             {employees.map((emp) => (
@@ -147,6 +234,7 @@ export default function IntegrationSection({ formData, handleInputChange, employ
       <div className="date-group">
         <input 
           type="date" 
+          name="activityFromDate"
           className="form-input" 
           min={todayDate}
           value={fromDate}
@@ -155,6 +243,7 @@ export default function IntegrationSection({ formData, handleInputChange, employ
         />
         <input 
           type="date" 
+          name="activityToDate"
           className="form-input" 
           min={fromDate || todayDate}
           value={toDate}
@@ -168,8 +257,8 @@ export default function IntegrationSection({ formData, handleInputChange, employ
         <label>
           <input
             type="radio"
-            name="schedule"
-            value="available"
+            name="activitySchedule"
+            value="YES"
             onChange={(e) => setActivitySchedule(e.target.value)}
           />
           Available
@@ -177,18 +266,19 @@ export default function IntegrationSection({ formData, handleInputChange, employ
         <label>
           <input
             type="radio"
-            name="schedule"
-            value="notavailable"
+            name="activitySchedule"
+            value="NO"
             onChange={(e) => setActivitySchedule(e.target.value)}
           />
           Not Available
         </label>
       </div>
-      {activitySchedule === "available" && (
+      {activitySchedule === "YES" && (
         <input type="file" accept=".pdf" className="form-input" required />
       )}
-      {activitySchedule === "notavailable" && (
+      {activitySchedule === "NO" && (
         <textarea
+          name="activityScheduleReason"
           className="form-input"
           placeholder="Enter reason"
           required
@@ -200,8 +290,8 @@ export default function IntegrationSection({ formData, handleInputChange, employ
         <label>
           <input
             type="radio"
-            name="ambulance"
-            value="required"
+            name="ambulanceRequired"
+            value="YES"
             onChange={(e) => setAmbulance(e.target.value)}
           />
           Required (Requisition Tab)
@@ -209,15 +299,16 @@ export default function IntegrationSection({ formData, handleInputChange, employ
         <label>
           <input
             type="radio"
-            name="ambulance"
-            value="notrequired"
+            name="ambulanceRequired"
+            value="NO"
             onChange={(e) => setAmbulance(e.target.value)}
           />
           Not Required
         </label>
       </div>
-      {ambulance === "notrequired" && (
+      {ambulance === "NO" && (
         <textarea
+          name="ambulanceReason"
           className="form-input"
           placeholder="Enter reason"
           required
@@ -225,7 +316,7 @@ export default function IntegrationSection({ formData, handleInputChange, employ
       )}
 
       <label className="form-label">Any Other Details</label>
-      <textarea className="form-input" placeholder="Enter details" />
+      <textarea name="otherDetails" className="form-input" placeholder="Enter details" />
     </div>
   );
 }

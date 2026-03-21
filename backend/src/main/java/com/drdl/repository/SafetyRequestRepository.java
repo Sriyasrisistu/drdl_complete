@@ -13,6 +13,8 @@ public interface SafetyRequestRepository extends JpaRepository<SafetyRequest, Lo
     List<SafetyRequest> findBySafetyCoverage(String safetyCoverage);
     List<SafetyRequest> findByPersonnelNumber(String personnelNumber);
     List<SafetyRequest> findByDateOfRequestBetween(LocalDate startDate, LocalDate endDate);
+    List<SafetyRequest> findAllByOrderByDateOfRequestDescRequestIdDesc();
+    List<SafetyRequest> findByGdTsStatusOrderByDateOfRequestDescRequestIdDesc(String status);
     
     @Query("SELECT s FROM SafetyRequest s WHERE s.headSfeedStatus = :status")
     List<SafetyRequest> findByApprovalStatus(@Param("status") String status);

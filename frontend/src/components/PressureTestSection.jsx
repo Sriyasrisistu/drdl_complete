@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 
 export default function PressureTestSection({ formData, handleInputChange }) {
   const [workCentre, setWorkCentre] = useState("");
@@ -15,6 +15,15 @@ export default function PressureTestSection({ formData, handleInputChange }) {
   };
 
   const todayDate = useMemo(() => getTodayDate(), []);
+
+  useEffect(() => {
+    setWorkCentre(formData.workCentre || "");
+    setTarbStatus(formData.tarbClearance || "");
+    setActivitySchedule(formData.activitySchedule || "");
+    setAmbulance(formData.ambulanceRequired || "");
+    setFromDate(formData.dateOfTest || "");
+    setToDate(formData.activityToDate || "");
+  }, [formData]);
 
   const handleFromDateChange = (e) => {
     const date = e.target.value;
@@ -47,6 +56,7 @@ export default function PressureTestSection({ formData, handleInputChange }) {
 
       <label className="form-label">Work Centre *</label>
       <select
+        name="workCentre"
         className="form-select"
         value={workCentre}
         onChange={(e) => setWorkCentre(e.target.value)}
@@ -59,6 +69,7 @@ export default function PressureTestSection({ formData, handleInputChange }) {
       </select>
       {workCentre === "other" && (
         <input
+          name="workCentre"
           type="text"
           placeholder="Specify Work Centre"
           className="form-input placeholder-box"
@@ -67,13 +78,14 @@ export default function PressureTestSection({ formData, handleInputChange }) {
       )}
 
       <label className="form-label">Details of Article Under Test *</label>
-      <input type="text" className="form-input" placeholder="Enter details" required />
+      <input type="text" name="articleDetails" className="form-input" placeholder="Enter details" required />
 
       <label className="form-label">Description of Work *</label>
-      <textarea className="form-input" placeholder="Enter description" required />
+      <textarea name="workDescription" className="form-input" placeholder="Enter description" required />
 
       <label className="form-label">TARB Clearance *</label>
       <select
+        name="tarbClearance"
         className="form-select"
         value={tarbStatus}
         onChange={(e) => setTarbStatus(e.target.value)}
@@ -87,26 +99,27 @@ export default function PressureTestSection({ formData, handleInputChange }) {
       {tarbStatus === "obtained" && (
         <>
           <label className="form-label">TARB Reference No. *</label>
-          <input type="text" className="form-input" required />
+          <input type="text" name="referenceNo" className="form-input" required />
         </>
       )}
       {tarbStatus === "notobtained" && (
         <>
           <label className="form-label">Reason *</label>
-          <textarea className="form-input" placeholder="Enter reason" required></textarea>
+          <textarea name="tarbReason" className="form-input" placeholder="Enter reason" required></textarea>
         </>
       )}
 
       <label className="form-label">Test Controller Name *</label>
-      <input type="text" className="form-input" required />
+      <input type="text" name="testControllerName" className="form-input" required />
 
       <label className="form-label">Test Controller Designation *</label>
-      <input type="text" className="form-input" required />
+      <input type="text" name="testControllerDesignation" className="form-input" required />
 
       <label className="form-label">Date of Test *</label>
       <div className="date-group">
         <input 
           type="date" 
+          name="dateOfTest"
           className="form-input" 
           min={todayDate}
           value={fromDate}
@@ -115,6 +128,7 @@ export default function PressureTestSection({ formData, handleInputChange }) {
         />
         <input 
           type="date" 
+          name="activityToDate"
           className="form-input" 
           min={fromDate || todayDate}
           value={toDate}
@@ -124,15 +138,15 @@ export default function PressureTestSection({ formData, handleInputChange }) {
       </div>
 
       <label className="form-label">Scheduled Time of Test *</label>
-      <input type="time" className="form-input" required />
+      <input type="time" name="testScheduleTime" className="form-input" required />
 
       <label className="form-label">Activity Schedule *</label>
       <div className="radio-group">
         <label>
           <input
             type="radio"
-            name="schedule"
-            value="available"
+            name="activitySchedule"
+            value="YES"
             onChange={(e) => setActivitySchedule(e.target.value)}
             required
           />
@@ -141,18 +155,18 @@ export default function PressureTestSection({ formData, handleInputChange }) {
         <label>
           <input
             type="radio"
-            name="schedule"
-            value="notavailable"
+            name="activitySchedule"
+            value="NO"
             onChange={(e) => setActivitySchedule(e.target.value)}
           />
           Not Available
         </label>
       </div>
-      {activitySchedule === "available" && (
+      {activitySchedule === "YES" && (
         <input type="file" accept=".pdf" className="form-input" required />
       )}
-      {activitySchedule === "notavailable" && (
-        <textarea className="form-input" placeholder="Enter reason" required></textarea>
+      {activitySchedule === "NO" && (
+        <textarea name="activityScheduleReason" className="form-input" placeholder="Enter reason" required></textarea>
       )}
 
       <label className="form-label">Ambulance *</label>
@@ -160,8 +174,8 @@ export default function PressureTestSection({ formData, handleInputChange }) {
         <label>
           <input
             type="radio"
-            name="ambulance"
-            value="required"
+            name="ambulanceRequired"
+            value="YES"
             onChange={(e) => setAmbulance(e.target.value)}
             required
           />
@@ -170,19 +184,19 @@ export default function PressureTestSection({ formData, handleInputChange }) {
         <label>
           <input
             type="radio"
-            name="ambulance"
-            value="notrequired"
+            name="ambulanceRequired"
+            value="NO"
             onChange={(e) => setAmbulance(e.target.value)}
           />
           Not Required
         </label>
       </div>
-      {ambulance === "notrequired" && (
-        <textarea className="form-input" placeholder="Enter reason" required></textarea>
+      {ambulance === "NO" && (
+        <textarea name="ambulanceReason" className="form-input" placeholder="Enter reason" required></textarea>
       )}
 
       <label className="form-label">Any Other Details</label>
-      <textarea className="form-input" placeholder="Enter details" />
+      <textarea name="otherDetails" className="form-input" placeholder="Enter details" />
     </div>
   );
 }

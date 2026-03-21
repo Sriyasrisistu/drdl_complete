@@ -59,6 +59,13 @@ describe('SafetyFireRequestForm Component', () => {
     
     fireEvent.change(personnelInput, { target: { value: '123456' } });
     fireEvent.change(coverageSelect, { target: { value: 'integration' } });
+    
+    // Select activity-in-charge radio
+    await waitFor(() => {
+      screen.getByLabelText(/DRDL/i);
+    });
+    fireEvent.click(screen.getByLabelText(/DRDL/i));
+    
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
@@ -79,6 +86,15 @@ describe('SafetyFireRequestForm Component', () => {
 
     fireEvent.change(personnelInput, { target: { value: '123456' } });
     fireEvent.change(coverageSelect, { target: { value: 'integration' } });
+    
+    // Fix: Interact with activity-in-charge radio in IntegrationSection
+    await waitFor(() => {
+      expect(screen.getByLabelText(/DRDL/i)).toBeInTheDocument();
+    });
+    const drdlRadio = screen.getByLabelText(/DRDL/i);
+    fireEvent.click(drdlRadio);
+    expect(drdlRadio).toBeChecked();
+    
     fireEvent.click(checkbox);
     fireEvent.click(submitBtn);
 
@@ -105,6 +121,13 @@ describe('SafetyFireRequestForm Component', () => {
 
     fireEvent.change(personnelInput, { target: { value: '123456' } });
     fireEvent.change(coverageSelect, { target: { value: 'integration' } });
+    
+    // Fix: Click activity-in-charge DRDL radio
+    await waitFor(() => {
+      expect(screen.getByLabelText(/DRDL/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/DRDL/i));
+    
     fireEvent.click(checkbox);
     fireEvent.click(submitBtn);
 
@@ -126,6 +149,13 @@ describe('SafetyFireRequestForm Component', () => {
 
     fireEvent.change(personnelInput, { target: { value: '123456' } });
     fireEvent.change(coverageSelect, { target: { value: 'integration' } });
+    
+    // Fix: Click activity-in-charge DRDL radio
+    await waitFor(() => {
+      expect(screen.getByLabelText(/DRDL/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/DRDL/i));
+    
     fireEvent.click(checkbox);
     fireEvent.click(submitBtn);
 

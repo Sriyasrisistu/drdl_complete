@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import ApiService from '../services/apiService';
 import './LoginForm.css';
 
@@ -74,6 +75,11 @@ const LoginForm = ({ onLoginSuccess }) => {
           <p>Demo Account</p>
           <p>Personnel No: <code>001234</code></p>
           <p>Password: <code>pass123</code></p>
+        </div>
+
+        <div className="portal-links">
+          <Link to="/sfeed" className="portal-link-btn">SFEED Login</Link>
+          <Link to="/gdts" className="portal-link-btn secondary-link">GD-T&S Login</Link>
         </div>
       </div>
     </div>

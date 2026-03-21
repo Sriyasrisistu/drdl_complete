@@ -40,6 +40,16 @@ public class SafetyRequestController {
         return ResponseEntity.ok(requests);
     }
 
+    @GetMapping("/approval/sfeed")
+    public ResponseEntity<List<SafetyRequestDTO>> getRequestsForSfeedApproval() {
+        return ResponseEntity.ok(service.getRequestsForSfeedApproval());
+    }
+
+    @GetMapping("/approval/gdts")
+    public ResponseEntity<List<SafetyRequestDTO>> getRequestsForGdTsApproval() {
+        return ResponseEntity.ok(service.getRequestsForGdTsApproval());
+    }
+
     @GetMapping("/coverage/{coverage}")
     public ResponseEntity<List<SafetyRequestDTO>> getRequestsByCoverage(@PathVariable String coverage) {
         List<SafetyRequestDTO> requests = service.getRequestsByCoverage(coverage);
@@ -56,5 +66,20 @@ public class SafetyRequestController {
     public ResponseEntity<Void> deleteRequest(@PathVariable Long id) {
         service.deleteRequest(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/submit")
+    public ResponseEntity<SafetyRequestDTO> submitRequest(@PathVariable Long id) {
+        return ResponseEntity.ok(service.submitRequest(id));
+    }
+
+    @PutMapping("/{id}/approval/sfeed")
+    public ResponseEntity<SafetyRequestDTO> approveBySfeed(@PathVariable Long id) {
+        return ResponseEntity.ok(service.approveBySfeed(id));
+    }
+
+    @PutMapping("/{id}/approval/gdts")
+    public ResponseEntity<SafetyRequestDTO> approveByGdTs(@PathVariable Long id) {
+        return ResponseEntity.ok(service.approveByGdTs(id));
     }
 }

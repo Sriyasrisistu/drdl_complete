@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ApiService from "../services/apiService";
 import "../styles/SafetyFireRequestForm.css";
 
@@ -16,11 +16,14 @@ import GuidelinesModal from "./GuidelinesModal";
 import RequestsTable from "./RequestsTable";
 import LoginForm from "./LoginForm";
 
+const EMPLOYEE_SESSION_KEY = "drdl_logged_in_employee";
+
 const BASE_FORM_DATA = {
   personnelNumber: "",
   safetyCoverage: "",
   directorate: "DRDL",
   division: "Engineering",
+  incharge: "",
   activityInchargeName: "",
   activityInchargeOrg: "",
   activityInchargePhone: "",
@@ -36,6 +39,21 @@ export default function SafetyFireRequestForm() {
   const [declared, setDeclared] = useState(false);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(false);
   const [refreshTable, setRefreshTable] = useState(0);
+  const formRef = useRef(null);
+
+  useEffect(() => {
+    const savedEmployee = window.sessionStorage.getItem(EMPLOYEE_SESSION_KEY);
+    if (!savedEmployee) {
+      return;
+    }
+
+    try {
+      setLoggedInEmployee(JSON.parse(savedEmployee));
+    } catch (error) {
+      console.error("Failed to restore employee session:", error);
+      window.sessionStorage.removeItem(EMPLOYEE_SESSION_KEY);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -60,6 +78,7 @@ export default function SafetyFireRequestForm() {
   }, [loggedInEmployee]);
 
   const resetForm = () => {
+    formRef.current?.reset();
     setFormData({
       ...BASE_FORM_DATA,
       personnelNumber: loggedInEmployee?.personnelNo || "",
@@ -70,10 +89,12 @@ export default function SafetyFireRequestForm() {
   };
 
   const handleLoginSuccess = (employee) => {
+    window.sessionStorage.setItem(EMPLOYEE_SESSION_KEY, JSON.stringify(employee));
     setLoggedInEmployee(employee);
   };
 
   const handleLogout = () => {
+    window.sessionStorage.removeItem(EMPLOYEE_SESSION_KEY);
     setLoggedInEmployee(null);
     setFormData(BASE_FORM_DATA);
     setCoverageType("");
@@ -84,125 +105,90 @@ export default function SafetyFireRequestForm() {
   const handleCoverageChange = (e) => {
     const value = e.target.value;
     setCoverageType(value);
-    setFormData({ ...formData, safetyCoverage: value });
+    setFormData((prev) => ({ ...prev, safetyCoverage: value }));
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlePrintForm = () => {
-    const printWindow = window.open("", "", "height=800,width=1000");
+  const buildRequestPayload = () => {
+    const serialized = {};
 
-    const coverageLabel = {
-      integration: "INTEGRATION",
-      static: "STATIC TEST",
-      thermostructural: "THERMOSTRUCTURAL",
-      pressure: "PRESSURE TEST",
-      grt: "GRT",
-      alignment: "ALIGNMENT INSPECTION",
-      radiography: "RADIOGRAPHY",
-      hydrobasin: "HYDROBASIN",
-      transportation: "TRANSPORTATION",
-      other: "ANY OTHER",
-    }[coverageType] || "N/A";
+    if (formRef.current) {
+      const formValues = new FormData(formRef.current);
+      formValues.forEach((value, key) => {
+        if (typeof value !== "string") {
+          return;
+        }
 
-    const labels = {
-      personnelNumber: "Personnel Number",
-      safetyCoverage: "Safety Coverage",
-      directorate: "Directorate",
-      division: "Division",
-      integrationFacility: "Integration Facility",
-      articleDetails: "Article Details",
-      workDescription: "Work Description",
-      activityInchargeName: "Activity Incharge Name",
-      activityInchargeOrg: "Activity Incharge Organization",
-      activityInchargePhone: "Activity Incharge Phone",
-      designation: "Designation",
-      activityFromDate: "Activity From Date",
-      activityToDate: "Activity To Date",
-      activitySchedule: "Activity Schedule",
-      ambulanceRequired: "Ambulance Required",
-      otherDetails: "Other Details",
-      testBed: "Test Bed",
-      tarbClearance: "TARB Clearance",
-      referenceNo: "Reference Number",
-      testControllerName: "Test Controller Name",
-      testControllerDesignation: "Test Controller Designation",
-      dateOfTest: "Date of Test",
-      testScheduleTime: "Test Schedule Time",
-      workCentre: "Work Centre",
-      transportation: "Transportation",
-      transScheduleTime: "Transport Schedule Time",
-      transIncharge: "Transport Incharge",
-      vehicleDetails: "Vehicle Details",
-      driverName: "Driver Name",
-      driverDesignation: "Driver Designation",
-      driverAuth: "Driver Authorized",
+        const trimmed = value.trim();
+        if (trimmed) {
+          serialized[key] = trimmed;
+        }
+      });
+    }
+
+    if (serialized.transportationFrom || serialized.transportationTo) {
+      serialized.transportation = `From: ${serialized.transportationFrom || "N/A"} | To: ${serialized.transportationTo || "N/A"}`;
+    }
+
+    if (serialized.transInchargeName || serialized.transInchargePhone) {
+      serialized.transIncharge = [serialized.transInchargeName, serialized.transInchargePhone]
+        .filter(Boolean)
+        .join(" / ");
+    }
+
+    if (serialized.vehicleType || serialized.vehicleNumber) {
+      serialized.vehicleDetails = [serialized.vehicleType, serialized.vehicleNumber]
+        .filter(Boolean)
+        .join(" / ");
+    }
+
+    if (serialized.tarbReason) {
+      serialized.otherDetails = [serialized.otherDetails, `TARB Reason: ${serialized.tarbReason}`]
+        .filter(Boolean)
+        .join(" | ");
+    }
+
+    if (serialized.activityScheduleReason) {
+      serialized.otherDetails = [serialized.otherDetails, `Activity Schedule Reason: ${serialized.activityScheduleReason}`]
+        .filter(Boolean)
+        .join(" | ");
+    }
+
+    if (serialized.ambulanceReason) {
+      serialized.otherDetails = [serialized.otherDetails, `Ambulance Reason: ${serialized.ambulanceReason}`]
+        .filter(Boolean)
+        .join(" | ");
+    }
+
+    if (serialized.driverAuthReason) {
+      serialized.otherDetails = [serialized.otherDetails, `Driver Authorization Reason: ${serialized.driverAuthReason}`]
+        .filter(Boolean)
+        .join(" | ");
+    }
+
+    delete serialized.transportationFrom;
+    delete serialized.transportationTo;
+    delete serialized.transInchargeName;
+    delete serialized.transInchargePhone;
+    delete serialized.vehicleType;
+    delete serialized.vehicleNumber;
+    delete serialized.drdlActivityIncharge;
+    delete serialized.incharge;
+    delete serialized.declaration;
+    delete serialized.tarbReason;
+    delete serialized.activityScheduleReason;
+    delete serialized.ambulanceReason;
+    delete serialized.driverAuthReason;
+
+    return {
+      ...formData,
+      ...serialized,
+      safetyCoverage: coverageType,
     };
-
-    const printableRows = Object.entries(formData)
-      .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "")
-      .map(([key, value]) => {
-        const label = labels[key] || key;
-        const displayValue = key === "safetyCoverage" ? coverageLabel : value;
-        return `<tr><td style="border:1px solid #d1d5db; padding:8px; width:35%;"><strong>${label}</strong></td><td style="border:1px solid #d1d5db; padding:8px;">${displayValue}</td></tr>`;
-      })
-      .join("");
-
-    const content = `
-      <div style="padding: 20px; font-family: Arial, sans-serif; color: #333;">
-        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #064E3B; padding-bottom: 15px;">
-          <h1 style="margin: 0 0 5px 0; color: #064E3B;">SAFETY & FIRE COVERAGE REQUEST FORM</h1>
-          <p style="margin: 5px 0; color: #6B7280; font-size: 14px;">Defence Research and Development Laboratory</p>
-        </div>
-
-        <div style="margin-bottom: 20px;">
-          <h3 style="color: #064E3B; border-bottom: 1px solid #10B981; padding-bottom: 8px;">FILLED REQUEST DETAILS</h3>
-          <table style="width: 100%; border-collapse: collapse;">
-            <tbody>
-              ${printableRows || '<tr><td colspan="2" style="border:1px solid #d1d5db; padding:8px;">No data entered.</td></tr>'}
-            </tbody>
-          </table>
-        </div>
-
-        <div style="margin-bottom: 20px;">
-          <p style="font-size: 12px; color: #6B7280; border-top: 1px solid #ddd; padding-top: 15px;">
-            <strong>Generated on:</strong> ${new Date().toLocaleString()}<br/>
-            <strong>Prepared by:</strong> ${loggedInEmployee.employeeName}<br/>
-            <strong>Designation:</strong> ${loggedInEmployee.designation}
-          </p>
-        </div>
-      </div>
-    `;
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Safety & Fire Request Form Preview</title>
-          <style>
-            @page {
-              size: A4 landscape;
-              margin: 10mm;
-            }
-            body {
-              margin: 0;
-              padding: 10mm;
-              font-family: Arial, sans-serif;
-            }
-          </style>
-        </head>
-        <body>
-          ${content}
-        </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-    setTimeout(() => {
-      printWindow.print();
-    }, 250);
   };
 
   const validateBaseFields = () => {
@@ -221,37 +207,12 @@ export default function SafetyFireRequestForm() {
     setMessage("");
 
     try {
-      const response = await ApiService.createRequest(formData);
+      const response = await ApiService.createRequest(buildRequestPayload());
       setMessage("Request saved successfully! ID: " + response.uniqueId);
       resetForm();
       setRefreshTable((prev) => prev + 1);
     } catch (error) {
       setMessage(`Error: ${error.message || "Save failed"}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!declared) {
-      setMessage("Error: You must accept the safety declaration");
-      return;
-    }
-
-    if (!validateBaseFields()) return;
-
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const response = await ApiService.createRequest(formData);
-      setMessage("Request submitted successfully! ID: " + response.uniqueId);
-      resetForm();
-      setRefreshTable((prev) => prev + 1);
-    } catch (error) {
-      setMessage(`Error: ${error.message || "Submission failed"}`);
     } finally {
       setLoading(false);
     }
@@ -282,7 +243,7 @@ export default function SafetyFireRequestForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <form ref={formRef} onSubmit={(e) => e.preventDefault()}>
         <div className="form-section">
           <label className="form-label">Type of Safety Coverage *</label>
           <select
@@ -359,31 +320,30 @@ export default function SafetyFireRequestForm() {
           </label>
         </div>
 
-        <div className="approvals-container">
-          <div className="approvals-left">
-            <h3>Head, SFEED</h3>
-            <p>Recommended / Not Recommended</p>
-            <h3>Work Allocated To</h3>
-            <h3>GD-T&S</h3>
-            <p>Approved / Not Approved</p>
+        {/*
+        <details className="approvals-section">
+          <summary className="approvals-summary">Approval Workflow</summary>
+          <div className="approvals-container">
+            <div className="approvals-left">
+              <h3>Head, SFEED</h3>
+              <p>Recommended / Not Recommended</p>
+              <h3>Work Allocated To</h3>
+              <h3>GD-T&S</h3>
+              <p>Approved / Not Approved</p>
+            </div>
+            <div className="approvals-right">
+              <label>Name & Designation</label>
+              <input type="text" className="form-input" disabled placeholder="To be filled by approver" />
+              <label>Contact No.</label>
+              <input type="text" className="form-input" disabled placeholder="To be filled by approver" />
+            </div>
           </div>
-          <div className="approvals-right">
-            <label>Name & Designation</label>
-            <input type="text" className="form-input" disabled placeholder="To be filled by approver" />
-            <label>Contact No.</label>
-            <input type="text" className="form-input" disabled placeholder="To be filled by approver" />
-          </div>
-        </div>
+        </details>
+        */}
 
         <div className="button-group">
-          <button type="button" className="btn print-btn" onClick={handlePrintForm} disabled={loading}>
-            PRINT FORM
-          </button>
           <button type="button" className="btn save-btn" onClick={handleSave} disabled={loading}>
             SAVE
-          </button>
-          <button type="submit" className="btn send-btn" disabled={loading}>
-            {loading ? "SUBMITTING..." : "SEND TO HEAD, SFEED"}
           </button>
         </div>
       </form>

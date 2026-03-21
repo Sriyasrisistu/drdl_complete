@@ -10,6 +10,7 @@ export default function OtherSection({ formData, handleInputChange }) {
 
       <label className="form-label">Specify Type of Safety Coverage *</label>
       <textarea
+        name="otherDetails"
         className="form-input"
         placeholder="Please specify the nature of activity requiring safety fire coverage"
         rows="6"

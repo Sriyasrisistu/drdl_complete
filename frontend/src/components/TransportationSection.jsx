@@ -1,8 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function TransportationSection({ formData, handleInputChange }) {
   const [workCentre, setWorkCentre] = useState("");
   const [driverAuth, setDriverAuth] = useState("");
+
+  useEffect(() => {
+    const [vehicleType = ""] = (formData.vehicleDetails || "").split(" / ");
+    setWorkCentre(vehicleType);
+    setDriverAuth(formData.driverAuth || "");
+  }, [formData]);
 
   return (
     <div className="form-section">
@@ -13,22 +19,23 @@ export default function TransportationSection({ formData, handleInputChange }) {
 
       <label className="form-label">Transportation *</label>
       <div className="transportation-group">
-        <input type="text" className="form-input" placeholder="From: Place" required />
-        <input type="text" className="form-input" placeholder="To: Place" required />
+        <input type="text" name="transportationFrom" className="form-input" placeholder="From: Place" required />
+        <input type="text" name="transportationTo" className="form-input" placeholder="To: Place" required />
       </div>
 
       <label className="form-label">Scheduled Time *</label>
-      <input type="time" className="form-input" required />
+      <input type="time" name="transScheduleTime" className="form-input" required />
 
       <label className="form-label">Details of Article *</label>
-      <input type="text" className="form-input" placeholder="Enter details" required />
+      <input type="text" name="articleDetails" className="form-input" placeholder="Enter details" required />
 
       <label className="form-label">Transportation In-Charge *</label>
-      <input type="text" className="form-input" placeholder="Name" required />
-      <input type="text" className="form-input" placeholder="Mobile No." required />
+      <input type="text" name="transInchargeName" className="form-input" placeholder="Name" required />
+      <input type="text" name="transInchargePhone" className="form-input" placeholder="Mobile No." required />
 
       <label className="form-label">Vehicle Details *</label>
       <select
+        name="vehicleType"
         className="form-select"
         value={workCentre}
         onChange={(e) => setWorkCentre(e.target.value)}
@@ -41,6 +48,7 @@ export default function TransportationSection({ formData, handleInputChange }) {
       </select>
       {workCentre === "other" && (
         <input
+          name="vehicleType"
           type="text"
           className="form-input placeholder-box"
           placeholder="Specify Vehicle Type"
@@ -48,6 +56,7 @@ export default function TransportationSection({ formData, handleInputChange }) {
         />
       )}
       <input
+        name="vehicleNumber"
         type="text"
         className="form-input"
         placeholder="Vehicle Number"
@@ -55,10 +64,10 @@ export default function TransportationSection({ formData, handleInputChange }) {
       />
 
       <label className="form-label">Driver Name *</label>
-      <input type="text" className="form-input" placeholder="Driver Name" required />
+      <input type="text" name="driverName" className="form-input" placeholder="Driver Name" required />
 
       <label className="form-label">Designation *</label>
-      <input type="text" className="form-input" placeholder="Designation" required />
+      <input type="text" name="driverDesignation" className="form-input" placeholder="Designation" required />
 
       <label className="form-label">Whether Driver Authorized by DRDL *</label>
       <div className="radio-group">
@@ -66,7 +75,7 @@ export default function TransportationSection({ formData, handleInputChange }) {
           <input
             type="radio"
             name="driverAuth"
-            value="yes"
+            value="YES"
             onChange={(e) => setDriverAuth(e.target.value)}
             required
           />
@@ -76,14 +85,15 @@ export default function TransportationSection({ formData, handleInputChange }) {
           <input
             type="radio"
             name="driverAuth"
-            value="no"
+            value="NO"
             onChange={(e) => setDriverAuth(e.target.value)}
           />
           No
         </label>
       </div>
-      {driverAuth === "no" && (
+      {driverAuth === "NO" && (
         <textarea
+          name="driverAuthReason"
           className="form-input"
           placeholder="Provide reason"
           required
@@ -91,7 +101,7 @@ export default function TransportationSection({ formData, handleInputChange }) {
       )}
 
       <label className="form-label">Any Other Details</label>
-      <textarea className="form-input" placeholder="Enter any other details" />
+      <textarea name="otherDetails" className="form-input" placeholder="Enter any other details" />
     </div>
   );
 }

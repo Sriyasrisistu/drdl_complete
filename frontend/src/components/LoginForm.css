@@ -211,6 +211,30 @@
   letter-spacing: 0.2px;
 }
 
+.portal-links {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.portal-link-btn {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  background: linear-gradient(135deg, #6B8CFF 0%, #7FA3FF 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.portal-link-btn.secondary-link {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid rgba(107, 140, 255, 0.35);
+}
+
 @media (max-width: 600px) {
   .login-card {
     padding: 32px 24px;
@@ -247,5 +271,9 @@
 
   .demo-credentials code {
     font-size: 11px;
+  }
+
+  .portal-links {
+    flex-direction: column;
   }
 }

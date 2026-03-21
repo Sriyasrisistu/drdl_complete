@@ -3,6 +3,7 @@ const API_BASE_URL = rawApiBaseUrl.replace(/\/$/, '');
 const API_PREFIX = API_BASE_URL.endsWith('/api/v1') ? '' : '/api/v1';
 const SAFETY_REQUEST_URL = `${API_BASE_URL}${API_PREFIX}/safety-requests`;
 const EMPLOYEE_URL = `${API_BASE_URL}${API_PREFIX}/employees`;
+const APPROVER_URL = `${API_BASE_URL}${API_PREFIX}/approvers`;
 
 class ApiService {
   static async request(url, options = {}, defaultErrorMessage = 'Request failed') {
@@ -37,6 +38,16 @@ class ApiService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ personnelNo, password }),
+    }, 'Failed to login');
+  }
+
+  static approverLogin(loginId, password) {
+    return ApiService.request(`${APPROVER_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ loginId, password }),
     }, 'Failed to login');
   }
 
@@ -97,6 +108,32 @@ class ApiService {
     return ApiService.request(`${SAFETY_REQUEST_URL}/${id}`, {
       method: 'DELETE',
     }, 'Failed to delete request');
+  }
+
+  static submitRequest(id) {
+    return ApiService.request(`${SAFETY_REQUEST_URL}/${id}/submit`, {
+      method: 'PUT',
+    }, 'Failed to submit request');
+  }
+
+  static getRequestsForSfeedApproval() {
+    return ApiService.request(`${SAFETY_REQUEST_URL}/approval/sfeed`, {}, 'Failed to fetch SFEED requests');
+  }
+
+  static getRequestsForGdTsApproval() {
+    return ApiService.request(`${SAFETY_REQUEST_URL}/approval/gdts`, {}, 'Failed to fetch GD-T&S requests');
+  }
+
+  static approveBySfeed(id) {
+    return ApiService.request(`${SAFETY_REQUEST_URL}/${id}/approval/sfeed`, {
+      method: 'PUT',
+    }, 'Failed to approve request');
+  }
+
+  static approveByGdTs(id) {
+    return ApiService.request(`${SAFETY_REQUEST_URL}/${id}/approval/gdts`, {
+      method: 'PUT',
+    }, 'Failed to approve request');
   }
 }
 

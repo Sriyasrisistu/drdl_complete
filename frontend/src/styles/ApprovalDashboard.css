@@ -1,0 +1,135 @@
+.approval-dashboard {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.approval-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.approval-header h1 {
+  margin: 0 0 6px;
+  color: #064e3b;
+}
+
+.approval-header p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.approval-logout-btn,
+.approval-action-btn {
+  background: #10b981;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 10px 16px;
+}
+
+.approval-logout-btn:hover,
+.approval-action-btn:hover:not(:disabled) {
+  background: #059669;
+}
+
+.approval-action-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.approval-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 20px;
+}
+
+.approval-table-card,
+.approval-detail-card {
+  background: white;
+  border: 1px solid #d1f7d6;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(6, 78, 59, 0.08);
+}
+
+.approval-table-card h2,
+.approval-detail-card h2 {
+  margin-top: 0;
+  color: #064e3b;
+}
+
+.approval-table-wrapper {
+  overflow: auto;
+}
+
+.approval-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.approval-table th,
+.approval-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  vertical-align: top;
+}
+
+.approval-table tbody tr {
+  cursor: pointer;
+}
+
+.approval-table tbody tr.selected {
+  background: #f0fdf4;
+}
+
+.approval-state {
+  color: #6b7280;
+  padding: 12px 0;
+}
+
+.approval-state.error {
+  color: #b91c1c;
+}
+
+.approval-done-text {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.detail-item {
+  background: #f9fffb;
+  border: 1px solid #d1f7d6;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.detail-label {
+  color: #064e3b;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.detail-value {
+  color: #1f2937;
+  word-break: break-word;
+}
+
+@media (max-width: 1000px) {
+  .approval-layout {
+    grid-template-columns: 1fr;
+  }
+}
